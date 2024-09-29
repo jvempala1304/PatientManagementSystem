@@ -1,0 +1,19 @@
+{
+  "name": "patient_management_system_api",
+  "version": "1.0.0",
+  "description": "API server for PatientManagementSystem",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jvempala1304/PatientManagementSystem.git"
+  },
+  "author": "James Boby Vempala, Sajith Koovaparambil, Xingda Zhou",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jvempala1304/PatientManagementSystem/issues"
+  },
+  "homepage": "https://github.com/jvempala1304/PatientManagementSystem#readme"
+}
