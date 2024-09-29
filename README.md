@@ -16,7 +16,7 @@ Make sure you have the following installed on your machine:
 1. Clone the repository to your local machine:
 
    ```
-   git clone https://github.com/your-repo/patient-management-system.git
+   git@github.com:jvempala1304/PatientManagementSystem.git
    ```
 
 2. Navigate to the project directory:
