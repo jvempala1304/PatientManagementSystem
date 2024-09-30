@@ -2,3 +2,4 @@ medisync/server/node_modules
 medisync/.env
 medisync/server/.env
 medisync/client/.env
+medisync/node_modules
