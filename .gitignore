@@ -3,3 +3,4 @@ medisync/.env
 medisync/server/.env
 medisync/client/.env
 medisync/node_modules
+medisync/server/firebase/medisync-db77a-4a7a7cdefa47.json

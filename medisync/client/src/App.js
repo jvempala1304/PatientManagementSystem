@@ -1,17 +1,11 @@
-import React from 'react';
-import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
-import PatientList from './pages/PatientList';
+import React, { useEffect } from "react";
+import { generateToken } from "./firebase/firebase";
 
 function App() {
-  return (
-    <Router>
-      <div className="App">
-        <Switch>
-          <Route path="/" component={PatientList} exact />
-        </Switch>
-      </div>
-    </Router>
-  );
+  useEffect(() => {
+    generateToken();
+  }, []);
+  return <h1>Medisync</h1>;
 }
 
 export default App;
