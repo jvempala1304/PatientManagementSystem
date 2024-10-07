@@ -1,41 +1,12 @@
 const express = require("express");
 const router = express.Router();
-const Patient = require("../models/Patient");
-const User = require("../models/userModel");
+const User = require("../models/Patient"); // Changed this line
 const db = require("../config/db");
+
 // API to insert a user profile
 router.post("/", async (req, res) => {
   try {
-    const {
-      firstname,
-      lastname,
-      email,
-      phone,
-      age,
-      sex,
-      address,
-      streetName,
-      city,
-      postalCode,
-      province,
-      insuranceNumber,
-    } = req.body;
-
-    const newUser = new User({
-      firstname,
-      lastname,
-      email,
-      phone,
-      age,
-      sex,
-      address,
-      streetName,
-      city,
-      postalCode,
-      province,
-      insuranceNumber,
-    });
-
+    const newUser = new User(req.body);
     await newUser.save();
     res
       .status(201)

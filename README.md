@@ -55,7 +55,7 @@ Make sure you have the following installed on your machine:
     npm start
     ```
 
-3. Open your browser and go to `http://localhost:3000` to interact with the application.
+3. Open your browser and go to `http://localhost:5000` to interact with the application.
 
 ## Features
 
