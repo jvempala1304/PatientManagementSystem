@@ -1,99 +1,222 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 const PatientProfile = ({ patient }) => {
+  const [formData, setFormData] = useState({ ...patient });
+  const [isEditable, setIsEditable] = useState(false);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log(JSON.stringify(formData));
+    setIsEditable(false);
+  };
+
+  const toggleEdit = () => {
+    setIsEditable(!isEditable);
+  };
+
   return (
-    <div style={styles.container}>
-      <h2 style={styles.sectionTitle}>Patient Profile 👤</h2>
-      <div style={styles.profileCard}>
-        <div style={styles.imageContainer}>
-          <img 
-            src={patient.imageUrl || '/images/Patient.jpg'} 
-            alt={`${patient.firstname} ${patient.lastname}`} 
-            style={styles.profileImage}
-            onError={(e) => {
-              e.target.onerror = null;
-              e.target.src = '/images/Patient.jpg';
-            }}
-          />
-        </div>
-        <div style={styles.infoContainer}>
-          <div style={styles.row}>
-            <div style={styles.field}>
-              <label style={styles.label}>First Name:</label>
-              <p style={styles.value}>{patient.firstname}</p>
+    <div style={styles.layout}>
+      <div style={styles.contentWrapper}>
+        <main style={styles.mainContent}>
+          <div style={styles.profileCard}>
+            <div style={styles.imageContainer}>
+              <img 
+                src={formData.imageUrl || '/images/Patient.jpg'} 
+                alt={`${formData.firstname} ${formData.lastname}`} 
+                style={styles.profileImage}
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = '/images/Patient.jpg';
+                }}
+              />
             </div>
-            <div style={styles.field}>
-              <label style={styles.label}>Last Name:</label>
-              <p style={styles.value}>{patient.lastname}</p>
-            </div>
-          </div>
-          <div style={styles.row}>
-            <div style={styles.field}>
-              <label style={styles.label}>Email:</label>
-              <p style={styles.value}>{patient.email}</p>
-            </div>
-            <div style={styles.field}>
-              <label style={styles.label}>Phone:</label>
-              <p style={styles.value}>{patient.phone}</p>
-            </div>
-          </div>
-          <div style={styles.row}>
-            <div style={styles.field}>
-              <label style={styles.label}>Age:</label>
-              <p style={styles.value}>{patient.age}</p>
-            </div>
-            <div style={styles.field}>
-              <label style={styles.label}>Sex:</label>
-              <p style={styles.value}>{patient.sex}</p>
-            </div>
-          </div>
-          <div style={styles.row}>
-            <div style={styles.field}>
-              <label style={styles.label}>Address:</label>
-              <p style={styles.value}>{patient.address}</p>
-            </div>
-            <div style={styles.field}>
-              <label style={styles.label}>Street Name:</label>
-              <p style={styles.value}>{patient.streetName}</p>
-            </div>
-          </div>
-          <div style={styles.row}>
-            <div style={styles.field}>
-              <label style={styles.label}>City:</label>
-              <p style={styles.value}>{patient.city}</p>
-            </div>
-            <div style={styles.field}>
-              <label style={styles.label}>Postal Code:</label>
-              <p style={styles.value}>{patient.postalCode}</p>
-            </div>
-          </div>
-          <div style={styles.row}>
-            <div style={styles.field}>
-              <label style={styles.label}>Province:</label>
-              <p style={styles.value}>{patient.province}</p>
-            </div>
-            <div style={styles.field}>
-              <label style={styles.label}>Insurance Number:</label>
-              <p style={styles.value}>{patient.insuranceNumber}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+            <form onSubmit={handleSubmit} style={styles.infoContainer}>
+              <div style={styles.row}>
+                <div style={styles.field}>
+                  <label style={styles.label}>First Name:</label>
+                  <input 
+                    type="text" 
+                    name="firstname" 
+                    value={formData.firstname} 
+                    onChange={handleChange} 
+                    disabled={!isEditable} 
+                    style={styles.input}
+                  />
+                </div>
+                <div style={styles.field}>
+                  <label style={styles.label}>Last Name:</label>
+                  <input 
+                    type="text" 
+                    name="lastname" 
+                    value={formData.lastname} 
+                    onChange={handleChange} 
+                    disabled={!isEditable} 
+                    style={styles.input}
+                  />
+                </div>
+              </div>
+              <div style={styles.row}>
+                <div style={styles.field}>
+                  <label style={styles.label}>Email:</label>
+                  <input 
+                    type="email" 
+                    name="email" 
+                    value={formData.email} 
+                    onChange={handleChange} 
+                    disabled={!isEditable} 
+                    style={styles.input}
+                  />
+                </div>
+                <div style={styles.field}>
+                  <label style={styles.label}>Phone:</label>
+                  <input 
+                    type="tel" 
+                    name="phone" 
+                    value={formData.phone} 
+                    onChange={handleChange} 
+                    disabled={!isEditable} 
+                    style={styles.input}
+                  />
+                </div>
+              </div>
+              <div style={styles.row}>
+                <div style={styles.field}>
+                  <label style={styles.label}>Age:</label>
+                  <input 
+                    type="number" 
+                    name="age" 
+                    value={formData.age} 
+                    onChange={handleChange} 
+                    disabled={!isEditable} 
+                    style={styles.input}
+                  />
+                </div>
+                <div style={styles.field}>
+                  <label style={styles.label}>Sex:</label>
+                  <select 
+                    name="sex" 
+                    value={formData.sex} 
+                    onChange={handleChange} 
+                    disabled={!isEditable} 
+                    style={{...styles.input, cursor: isEditable ? 'pointer' : 'not-allowed'}}
+                  >
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                  </select>
+                </div>
+              </div>
+              <div style={styles.row}>
+                <div style={styles.field}>
+                  <label style={styles.label}>Address:</label>
+                  <input 
+                    type="text" 
+                    name="address" 
+                    value={formData.address} 
+                    onChange={handleChange}  
+                    disabled={!isEditable}  
+                    style={styles.input}
+                  />
+                </div>
+                <div style={styles.field}>
+                  <label style={styles.label}>Street Name:</label>
+                  <input 
+                    type="text" 
+                    name="streetName" 
+                    value={formData.streetName}  
+                    onChange={handleChange}  
+                    disabled={!isEditable}
+                     style={styles.input}
+                  />
+                </div>
+              </div>
+              <div style={styles.row}>
+                <div style={styles.field}>
+                  <label style={styles.label}>City:</label>
+                  <input
+                     type="text"
+                     name="city"
+                     value= {formData.city}
+                     onChange= {handleChange}
+                     disabled={!isEditable}
+                     styles= { styles.input }
+                   />
+                </div>
+                <div style={{... styles.field}}>
+                   <label>Postal Code:</label>
+                   <input
+                       type="text"
+                       name="postalCode"
+                       value= {formData.postalCode}
+                       onChange= {handleChange}
+                       styles= { styles.input }
+                       disabled={!isEditable}
+                   />
+               </div>  
+              </div>  
+              <div style={styles.row}>
+                <div style={styles.field}>
+                  <label style={styles.label}>Province:</label>
+                  <input
+                      type="text"
+                      name="province"
+                      value={formData.province}
+                      onChange={handleChange}
+                      disabled={!isEditable}
+                      style={styles.input}
+                   />
+                </div>
+                <div style={{... styles.field}}>
+                   <label>Insurance Number:</label>
+                   <input
+                       type="text"
+                       name="insuranceNumber"
+                       value= {formData.insuranceNumber}
+                       onChange= {handleChange}
+                       styles= { styles.input }
+                       disabled={!isEditable}
+                   />
+               </div>  
+              </div>  
+              <button type="submit" style={{... styles.button, marginTop: '20px'}}>
+                 Submit
+              </button>  
+            </form>  
+            {!isEditable && (
+              <button onClick={toggleEdit} style={{... styles.button, marginTop: '20px'}}>
+                 Update
+              </button>  
+            )}
+          </div>  
+        </main>  
+      </div>  
+    </div>  
   );
 };
 
 const styles = {
-  container: {
+  layout: {
+    display: 'flex',
+    flexDirection: 'column',
+    minHeight: '100vh',
+  },
+  contentWrapper: {
+    display: 'flex',
+    flex: 1,
+    padding: '20px',
+  },
+  mainContent: {
+    flex: 1,
     padding: '20px',
     backgroundColor: 'rgb(234, 244, 254)',
-    minHeight: 'calc(100vh - 160px)',
-  },
-  sectionTitle: {
-    color: 'rgb(56, 147, 227)',
-    fontSize: '24px',
-    fontWeight: 'bold',
-    marginBottom: '20px',
+    overflowY: 'auto',
   },
   profileCard: {
     backgroundColor: 'rgba(255, 255, 255, 0.6)',
@@ -132,15 +255,22 @@ const styles = {
     marginBottom: '5px',
     display: 'block',
   },
-  value: {
-    color: 'rgb(56, 147, 227)',
-    fontSize: '16px',
-    fontWeight: 'bold',
-    backgroundColor: 'rgba(234, 244, 254, 0.8)',
-    padding: '10px',
-    borderRadius: '5px',
-    margin: '0',
-  },
+  input: {
+     width:'100%',
+     padding:'10px',  
+     borderRadius:'5px',  
+     border:'1px solid #ccc',  
+     fontSize:'16px',  
+   },   
+   button:{
+     width:'100%',  
+     height:'50px',  
+     color:'white',  
+     backgroundColor:'#4CAF50',  
+     borderRadius:'5px',  
+     border:'none',  
+     cursor:'pointer',  
+   },    
 };
 
 export default PatientProfile;
