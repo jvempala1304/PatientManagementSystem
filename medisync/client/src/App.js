@@ -1,9 +1,8 @@
 import React, { useEffect } from 'react';
 // import { generateToken } from "./firebase/firebase";
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Home, Login } from './pages';
+import { Home, Login, Profile } from './pages';
 
-import PatientProfile from './components/PatientProfile/PatientProfile';
 function App() {
   useEffect(() => {
     // generateToken();
@@ -37,7 +36,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/patient-profile" element={<PatientProfile patient={patientData} />} />
+          <Route path="/patient-profile" element={<Profile patient={patientData} />} />
         </Routes>
       </div>
     </Router>
