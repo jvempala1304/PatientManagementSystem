@@ -1,18 +1,42 @@
 import React, { useEffect } from 'react';
 // import { generateToken } from "./firebase/firebase";
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { Home, Login } from './pages';
+import { Home, Login, Profile } from './pages';
+
 function App() {
   useEffect(() => {
     // generateToken();
   }, []);
+
+  // This is mock data. In a real application, you'd probably fetch this from an API or pass it from a parent component.
+
+  const patientData = {
+    "_id": "670337ca49fe1c0964e974f3",
+    "firstname": "John",
+    "lastname": "Doe",
+    "email": "john.doe@example.com",
+    "phone": "123-456-7890",
+    "age": 30,
+    "sex": "Male",
+    "address": "123 Main St",
+    "streetName": "Main St",
+    "city": "Waterloo",
+    "postalCode": "N2L 0K5",
+    "province": "Ontario",
+    "insuranceNumber": "ABC123456",
+    "imageUrl": "https://www.pexels.com/photo/well-dressed-businessman-sitting-on-sofa-3771839/", // Add this line
+    "__v": 0,
+    "createdAt": "2024-10-28T21:05:30.350Z",
+    "updatedAt": "2024-10-28T21:05:30.350Z"
+  };
+
   return (
     <Router>
       <div className="App">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
-          
+          <Route path="/patient-profile" element={<Profile patient={patientData} />} />
         </Routes>
       </div>
     </Router>
