@@ -12,7 +12,7 @@ const Navigation = () => (
         </Link>
       </li>
       <li>
-        <Link to="/" style={styles.link}>
+        <Link to="/patient-list" style={styles.link}>
           Patient List
         </Link>
       </li>
