@@ -1,20 +1,33 @@
-import React, { useState } from "react";
-// import username from "../../assets/username.png";
-import email from "../../assets/email.png";
-// import passwordUnlock from "../../assets/passwordUnlock.png";
-// import phone from "../../assets/phone.png";
-import password from "../../assets/password.png";
+import React, { useState, useRef } from "react";
+import email_image from "../../assets/email.png";
+import password_image from "../../assets/password.png";
 import doctor from "../../assets/doctor.png";
 import doctorLogo from "../../assets/doctorLogo.webp";
-import { doSignInWithGoogle } from "../../firebase/auth";
+import {
+  doSignInWithEmailAndPassword,
+  doSignInWithGoogle,
+} from "../../firebase/auth";
 // import { useAuth } from "../../contexts/authContext";
-const MainContent = () => {
+const Login = () => {
   // const { userLoggedIn } = useAuth();
+  const email = useRef();
+  const password = useRef();
   const [isSigningIn, setIsSigningIn] = useState(false);
   const loginWithGoogle = async (e) => {
     if (!isSigningIn) {
       setIsSigningIn(true);
       doSignInWithGoogle().catch((err) => {
+        setIsSigningIn(false);
+      });
+    }
+  };
+  const loginWithEmail = async (e) => {
+    if (!isSigningIn) {
+      setIsSigningIn(true);
+      doSignInWithEmailAndPassword(
+        email.current.value,
+        password.current.value
+      ).catch((err) => {
         setIsSigningIn(false);
       });
     }
@@ -32,21 +45,9 @@ const MainContent = () => {
       <div style={styles.mainRight}>
         <p style={styles.text}>Login</p>
         <form action="#">
-          {/*<div style={{ ...styles.one, ...styles.two }}>
-            <div>
-              <img style={styles.icon} src={username} alt="Username Icon" />
-            </div>
-            <input
-              style={styles.inputs}
-              type="text"
-              placeholder="Username"
-              name="username"
-              id="username"
-            />
-          </div>*/}
           <div style={styles.one}>
             <div>
-              <img style={styles.icon} src={email} alt="Email Icon" />
+              <img style={styles.icon} src={email_image} alt="Email Icon" />
             </div>
             <input
               style={styles.inputs}
@@ -54,11 +55,16 @@ const MainContent = () => {
               placeholder="Email"
               name="email"
               id="email"
+              ref={email}
             />
           </div>
           <div style={styles.one}>
             <div>
-              <img style={styles.icon} src={password} alt="Password Icon" />
+              <img
+                style={styles.icon}
+                src={password_image}
+                alt="Password Icon"
+              />
             </div>
             <input
               style={styles.inputs}
@@ -66,36 +72,9 @@ const MainContent = () => {
               placeholder="password"
               name="password"
               id="password"
+              ref={password}
             />
           </div>
-          {/*<div style={styles.one}>
-            <div>
-              <img
-                style={styles.icon}
-                src={passwordUnlock}
-                alt="Confirm Password Icon"
-              />
-            </div>
-            <input
-              style={styles.inputs}
-              type="password"
-              placeholder="confirm password"
-              name="confirmPassword"
-              id="confirm-password"
-            />
-          </div>
-          <div style={styles.one}>
-            <div>
-              <img style={styles.icon} src={phone} alt="Phone Icon" />
-            </div>
-            <input
-              style={styles.inputs}
-              type="text"
-              placeholder="phone number"
-              name="phoneNumber"
-              id="phone-number"
-            />
-          </div>*/}
         </form>
         <div
           style={{
@@ -104,11 +83,13 @@ const MainContent = () => {
           }}
         >
           <a href="#login" style={styles.three}>
-            Already have an account? Log in
+            Don't have an account? Sign Up
           </a>
         </div>
         <div style={styles.btns}>
-          <button style={styles.btn}>Login</button>
+          <button style={styles.btn} onClick={loginWithEmail}>
+            Login
+          </button>
         </div>
         <div style={styles.divider}></div>
         <div style={styles.btns}>
@@ -219,4 +200,4 @@ const styles = {
   },
 };
 
-export default MainContent;
+export default Login;
