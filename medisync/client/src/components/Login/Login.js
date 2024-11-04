@@ -1,17 +1,33 @@
-import React, { useState } from "react";
-import email from "../../assets/email.png";
-import password from "../../assets/password.png";
+import React, { useState, useRef } from "react";
+import email_image from "../../assets/email.png";
+import password_image from "../../assets/password.png";
 import doctor from "../../assets/doctor.png";
 import doctorLogo from "../../assets/doctorLogo.webp";
-import { doSignInWithGoogle } from "../../firebase/auth";
+import {
+  doSignInWithEmailAndPassword,
+  doSignInWithGoogle,
+} from "../../firebase/auth";
 // import { useAuth } from "../../contexts/authContext";
 const Login = () => {
   // const { userLoggedIn } = useAuth();
+  const email = useRef();
+  const password = useRef();
   const [isSigningIn, setIsSigningIn] = useState(false);
   const loginWithGoogle = async (e) => {
     if (!isSigningIn) {
       setIsSigningIn(true);
       doSignInWithGoogle().catch((err) => {
+        setIsSigningIn(false);
+      });
+    }
+  };
+  const loginWithEmail = async (e) => {
+    if (!isSigningIn) {
+      setIsSigningIn(true);
+      doSignInWithEmailAndPassword(
+        email.current.value,
+        password.current.value
+      ).catch((err) => {
         setIsSigningIn(false);
       });
     }
@@ -31,7 +47,7 @@ const Login = () => {
         <form action="#">
           <div style={styles.one}>
             <div>
-              <img style={styles.icon} src={email} alt="Email Icon" />
+              <img style={styles.icon} src={email_image} alt="Email Icon" />
             </div>
             <input
               style={styles.inputs}
@@ -39,11 +55,16 @@ const Login = () => {
               placeholder="Email"
               name="email"
               id="email"
+              ref={email}
             />
           </div>
           <div style={styles.one}>
             <div>
-              <img style={styles.icon} src={password} alt="Password Icon" />
+              <img
+                style={styles.icon}
+                src={password_image}
+                alt="Password Icon"
+              />
             </div>
             <input
               style={styles.inputs}
@@ -51,6 +72,7 @@ const Login = () => {
               placeholder="password"
               name="password"
               id="password"
+              ref={password}
             />
           </div>
         </form>
@@ -65,7 +87,9 @@ const Login = () => {
           </a>
         </div>
         <div style={styles.btns}>
-          <button style={styles.btn}>Login</button>
+          <button style={styles.btn} onClick={loginWithEmail}>
+            Login
+          </button>
         </div>
         <div style={styles.divider}></div>
         <div style={styles.btns}>

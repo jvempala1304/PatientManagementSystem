@@ -1,21 +1,37 @@
-import React, { useState } from "react";
-import username from "../../assets/username.png";
-import email from "../../assets/email.png";
+import React, { useState, useRef } from "react";
+import email_image from "../../assets/email.png";
 import passwordUnlock from "../../assets/passwordUnlock.png";
 import phone from "../../assets/phone.png";
-import password from "../../assets/password.png";
+import password_image from "../../assets/password.png";
 import doctor from "../../assets/doctor.png";
 import doctorLogo from "../../assets/doctorLogo.webp";
-import { doSignInWithGoogle } from "../../firebase/auth";
+import {
+  doCreateUserWithEmailAndPassword,
+  doSignInWithGoogle,
+} from "../../firebase/auth";
 // import { useAuth } from "../../contexts/authContext";
 const Signup = () => {
   // const { userLoggedIn } = useAuth();
+  const email = useRef();
+  const password = useRef();
   const [isSigningIn, setIsSigningIn] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
   const loginWithGoogle = async (e) => {
     if (!isSigningIn) {
       setIsSigningIn(true);
       doSignInWithGoogle().catch((err) => {
         setIsSigningIn(false);
+      });
+    }
+  };
+  const signupWithEmail = async (e) => {
+    if (!isRegistering) {
+      setIsRegistering(true);
+      doCreateUserWithEmailAndPassword(
+        email.current.value,
+        password.current.value
+      ).catch((err) => {
+        setIsRegistering(false);
       });
     }
   };
@@ -32,21 +48,9 @@ const Signup = () => {
       <div style={styles.mainRight}>
         <p style={styles.text}>Sign Up</p>
         <form action="#">
-          <div style={{ ...styles.one, ...styles.two }}>
-            <div>
-              <img style={styles.icon} src={username} alt="Username Icon" />
-            </div>
-            <input
-              style={styles.inputs}
-              type="text"
-              placeholder="Username"
-              name="username"
-              id="username"
-            />
-          </div>
           <div style={styles.one}>
             <div>
-              <img style={styles.icon} src={email} alt="Email Icon" />
+              <img style={styles.icon} src={email_image} alt="Email Icon" />
             </div>
             <input
               style={styles.inputs}
@@ -54,11 +58,16 @@ const Signup = () => {
               placeholder="Email"
               name="email"
               id="email"
+              ref={email}
             />
           </div>
           <div style={styles.one}>
             <div>
-              <img style={styles.icon} src={password} alt="Password Icon" />
+              <img
+                style={styles.icon}
+                src={password_image}
+                alt="Password Icon"
+              />
             </div>
             <input
               style={styles.inputs}
@@ -66,6 +75,7 @@ const Signup = () => {
               placeholder="password"
               name="password"
               id="password"
+              ref={password}
             />
           </div>
           <div style={styles.one}>
@@ -108,7 +118,9 @@ const Signup = () => {
           </a>
         </div>
         <div style={styles.btns}>
-          <button style={styles.btn}>Login</button>
+          <button style={styles.btn} onClick={signupWithEmail}>
+            Sign Up
+          </button>
         </div>
         <div style={styles.divider}></div>
         <div style={styles.btns}>
