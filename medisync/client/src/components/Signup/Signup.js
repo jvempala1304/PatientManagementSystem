@@ -1,14 +1,14 @@
 import React, { useState } from "react";
-// import username from "../../assets/username.png";
+import username from "../../assets/username.png";
 import email from "../../assets/email.png";
-// import passwordUnlock from "../../assets/passwordUnlock.png";
-// import phone from "../../assets/phone.png";
+import passwordUnlock from "../../assets/passwordUnlock.png";
+import phone from "../../assets/phone.png";
 import password from "../../assets/password.png";
 import doctor from "../../assets/doctor.png";
 import doctorLogo from "../../assets/doctorLogo.webp";
 import { doSignInWithGoogle } from "../../firebase/auth";
 // import { useAuth } from "../../contexts/authContext";
-const MainContent = () => {
+const Signup = () => {
   // const { userLoggedIn } = useAuth();
   const [isSigningIn, setIsSigningIn] = useState(false);
   const loginWithGoogle = async (e) => {
@@ -30,9 +30,9 @@ const MainContent = () => {
         </div>
       </div>
       <div style={styles.mainRight}>
-        <p style={styles.text}>Login</p>
+        <p style={styles.text}>Sign Up</p>
         <form action="#">
-          {/*<div style={{ ...styles.one, ...styles.two }}>
+          <div style={{ ...styles.one, ...styles.two }}>
             <div>
               <img style={styles.icon} src={username} alt="Username Icon" />
             </div>
@@ -43,7 +43,7 @@ const MainContent = () => {
               name="username"
               id="username"
             />
-          </div>*/}
+          </div>
           <div style={styles.one}>
             <div>
               <img style={styles.icon} src={email} alt="Email Icon" />
@@ -68,7 +68,7 @@ const MainContent = () => {
               id="password"
             />
           </div>
-          {/*<div style={styles.one}>
+          <div style={styles.one}>
             <div>
               <img
                 style={styles.icon}
@@ -95,7 +95,7 @@ const MainContent = () => {
               name="phoneNumber"
               id="phone-number"
             />
-          </div>*/}
+          </div>
         </form>
         <div
           style={{
@@ -113,7 +113,7 @@ const MainContent = () => {
         <div style={styles.divider}></div>
         <div style={styles.btns}>
           <button style={styles.btn} onClick={loginWithGoogle}>
-            Login with Google
+            Sign up with Google
           </button>
         </div>
       </div>
@@ -219,4 +219,4 @@ const styles = {
   },
 };
 
-export default MainContent;
+export default Signup;
