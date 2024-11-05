@@ -2,6 +2,11 @@ import React, { useEffect } from 'react';
 // import { generateToken } from "./firebase/firebase";
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Home, Login, Profile } from './pages';
+import { MantineProvider } from '@mantine/core';
+import { Notifications } from '@mantine/notifications';
+import PrescriptionManagementPage from './pages/PrescriptionManagement/PrescriptionManagement';
+import AppointmentManagementPage from './pages/AppointmentManagement/AppointmentManagement';
+
 
 function App() {
   useEffect(() => {
@@ -31,15 +36,20 @@ function App() {
   };
 
   return (
-    <Router>
-      <div className="App">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/patient-profile" element={<Profile patient={patientData} />} />
-        </Routes>
-      </div>
-    </Router>
+    <MantineProvider withGlobalStyles withNormalizeCSS>
+      <Notifications />
+      <Router>
+        <div className="App">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/patient-profile" element={<Profile patient={patientData} />} />
+            <Route path="/prescriptions" element={<PrescriptionManagementPage />} />
+            <Route path="/appointments" element={<AppointmentManagementPage />} />
+          </Routes>
+        </div>
+      </Router>
+    </MantineProvider>
   );
 }
 

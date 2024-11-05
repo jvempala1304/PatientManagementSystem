@@ -4,3 +4,4 @@ export { default as MainContent } from './MainContent/MainContent';
 export { default as Dashboard } from './Dashboard/Dashboard';
 export { default as Navigation } from './Navigation/Navigation';
 export { default as PatientProfile } from './PatientProfile/PatientProfile';
+export { default as PrescriptionManagement } from './PrescriptionManagement/PrescriptionManagement';
