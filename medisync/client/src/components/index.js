@@ -8,3 +8,4 @@ export { default as Navigation } from "./Navigation/Navigation";
 export { default as PatientProfile } from "./PatientProfile/PatientProfile";
 export { default as Search } from './Search/Search';
 export { default as Banner } from './Banner/banner';
+export { default as PrescriptionManagement } from './PrescriptionManagement/PrescriptionManagement';

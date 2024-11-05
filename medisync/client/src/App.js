@@ -2,6 +2,8 @@ import React, { useEffect } from "react";
 // import { generateToken } from "./firebase/firebase";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Home, LoginPage, SignupPage, FeedbackPage, Profile } from "./pages";
+import PrescriptionManagementPage from "./pages/PrescriptionManagement/PrescriptionManagement";
+import AppointmentManagementPage from "./pages/AppointmentManagement/AppointmentManagement";
 
 function App() {
   useEffect(() => {
@@ -43,6 +45,12 @@ function App() {
             path="/patient-profile"
             element={<Profile patient={patientData} />}
           />
+
+          <Route
+            path="/prescriptions"
+            element={<PrescriptionManagementPage />}
+          />
+          <Route path="/appointments" element={<AppointmentManagementPage />} />
         </Routes>
       </div>
     </Router>
