@@ -9,13 +9,56 @@ import {
   doCreateUserWithEmailAndPassword,
   doSignInWithGoogle,
 } from "../../firebase/auth";
-// import { useAuth } from "../../contexts/authContext";
+
 const Signup = () => {
-  // const { userLoggedIn } = useAuth();
   const email = useRef();
   const password = useRef();
+  const confirmPassword = useRef();
+  const phoneNumber = useRef();
+
   const [isSigningIn, setIsSigningIn] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
+  const [validationError, setValidationError] = useState("");
+
+  const validateInputs = () => {
+    const emailValue = email.current.value;
+    const passwordValue = password.current.value;
+    const confirmPasswordValue = confirmPassword.current.value;
+    const phoneValue = phoneNumber.current.value;
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailValue)) {
+      return "Please enter a valid email address.";
+    }
+
+    if (!/^\d{10}$/.test(phoneValue)) {
+      return "Please enter a 10-digit phone number.";
+    }
+
+    if (passwordValue !== confirmPasswordValue) {
+      return "Passwords do not match.";
+    }
+
+    return "";
+  };
+
+  const signupWithEmail = async (e) => {
+    e.preventDefault();
+    const error = validateInputs();
+    if (error) {
+      setValidationError(error);
+      return;
+    }
+
+    setIsRegistering(true);
+    doCreateUserWithEmailAndPassword(
+      email.current.value,
+      password.current.value
+    ).catch((err) => {
+      setIsRegistering(false);
+    });
+  };
+
   const loginWithGoogle = async (e) => {
     if (!isSigningIn) {
       setIsSigningIn(true);
@@ -24,17 +67,9 @@ const Signup = () => {
       });
     }
   };
-  const signupWithEmail = async (e) => {
-    if (!isRegistering) {
-      setIsRegistering(true);
-      doCreateUserWithEmailAndPassword(
-        email.current.value,
-        password.current.value
-      ).catch((err) => {
-        setIsRegistering(false);
-      });
-    }
-  };
+
+  const handleInputChange = () => setValidationError("");
+
   return (
     <main style={styles.main}>
       <div style={styles.mainLeft}>
@@ -59,6 +94,7 @@ const Signup = () => {
               name="email"
               id="email"
               ref={email}
+              onChange={handleInputChange}
             />
           </div>
           <div style={styles.one}>
@@ -76,6 +112,7 @@ const Signup = () => {
               name="password"
               id="password"
               ref={password}
+              onChange={handleInputChange}
             />
           </div>
           <div style={styles.one}>
@@ -92,6 +129,8 @@ const Signup = () => {
               placeholder="confirm password"
               name="confirmPassword"
               id="confirm-password"
+              ref={confirmPassword}
+              onChange={handleInputChange}
             />
           </div>
           <div style={styles.one}>
@@ -104,16 +143,13 @@ const Signup = () => {
               placeholder="phone number"
               name="phoneNumber"
               id="phone-number"
+              ref={phoneNumber}
+              onChange={handleInputChange}
             />
           </div>
         </form>
-        <div
-          style={{
-            textAlign: "right",
-            margin: "10px 0",
-          }}
-        >
-          <a href="#login" style={styles.three}>
+        <div style={{ textAlign: "right", margin: "10px 0" }}>
+          <a href="/login" style={styles.three}>
             Already have an account? Log in
           </a>
         </div>
@@ -128,6 +164,7 @@ const Signup = () => {
             Sign up with Google
           </button>
         </div>
+        {validationError && <div style={styles.error}>{validationError}</div>}
       </div>
     </main>
   );
@@ -184,12 +221,6 @@ const styles = {
     margin: "15px 0",
     position: "relative",
   },
-  two: {
-    marginTop: "30px !important",
-  },
-  three: {
-    textAlign: "right !important",
-  },
   icon: {
     position: "absolute",
     top: "50%",
@@ -198,7 +229,6 @@ const styles = {
     height: "18px",
     left: "25px",
   },
-
   btns: {
     width: "100%",
     display: "flex",
@@ -228,6 +258,11 @@ const styles = {
     backgroundColor: "#ccc",
     width: "100%",
     margin: "20px 0",
+  },
+  error: {
+    color: "red",
+    textAlign: "center",
+    marginTop: "10px",
   },
 };
 
