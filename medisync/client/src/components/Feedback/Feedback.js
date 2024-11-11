@@ -1,53 +1,105 @@
-import React from "react";
-const appointments = [
-  { id: "001", name: "Dr. Mathew" },
-  { id: "002", name: "Dr. John" },
-  { id: "003", name: "Dr. Luke" },
-];
-const Feedback = () => (
-  <main style={styles.main}>
-    <div style={styles.appointmentList}>
-      <h2 style={styles.sectionTitle}>Appointment History 🕒</h2>
-      <table style={styles.table}>
-        <thead>
-          <tr>
-            <th style={styles.headerCell}>No.</th>
-            <th style={styles.headerCell}>Appointment</th>
-          </tr>
-        </thead>
-        <tbody>
-          {appointments.map((appointment, index) => (
-            <tr
-              key={index}
-              style={{
-                ...styles.row,
-                backgroundColor: index % 2 === 0 ? "#FFFFFF" : "#f7faff",
-              }}
-            >
-              <td style={styles.cell}>{appointment.id}</td>
-              <td style={styles.cell}>{appointment.name}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 
-    <div style={styles.patientInfo}>
-      <h2 style={styles.sectionTitle}>Feedback 🗣</h2>
-      <form style={styles.form}>
-        <textarea
-          placeholder="Enter feedback here..."
-          style={styles.textarea}
-        ></textarea>
-        <div style={styles.buttonGroup}>
-          <button type="button" style={styles.button}>
-            Submit feedback
-          </button>
-        </div>
-      </form>
-    </div>
-  </main>
-);
+const Feedback = () => {
+  const [appointments, setAppointments] = useState([]);
+  const [feedback, setFeedback] = useState("");
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchFeedback = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/feedback");
+        setAppointments(response.data);
+      } catch (err) {
+        setError("Error fetching feedback data");
+      }
+    };
+
+    fetchFeedback();
+  }, []);
+
+  const handleSubmit = async () => {
+    try {
+      await axios.post("http://localhost:5000/api/feedback", {
+        comment: feedback,
+        rating: 5,
+        patientId: "patient-id",
+        clinicId: "clinic-id",
+        doctorId: "doctor-id",
+        visitDate: new Date(),
+      });
+      setFeedback("");
+      setError(null);
+      alert("Feedback submitted successfully!");
+    } catch (err) {
+      setError("Error submitting feedback");
+    }
+  };
+
+  return (
+    <main style={styles.main}>
+      <div style={styles.appointmentList}>
+        <h2 style={styles.sectionTitle}>Appointment History 🕒</h2>
+        {error && <p style={{ color: "red" }}>{error}</p>}
+        <table style={styles.table}>
+          <thead>
+            <tr>
+              <th style={styles.headerCell}>No.</th>
+              <th style={styles.headerCell}>Appointment</th>
+              <th style={styles.headerCell}>Doctor</th>
+              <th style={styles.headerCell}>Rating</th>
+              <th style={styles.headerCell}>Comment</th>
+            </tr>
+          </thead>
+          <tbody>
+            {appointments.map((appointment, index) => (
+              <tr
+                key={appointment._id}
+                style={{
+                  ...styles.row,
+                  backgroundColor: index % 2 === 0 ? "#FFFFFF" : "#f7faff",
+                }}
+              >
+                <td style={styles.cell}>{index + 1}</td>
+                <td style={styles.cell}>{appointment.clinic?.name}</td>
+                <td style={styles.cell}>
+                  {appointment.patient?.firstname}{" "}
+                  {appointment.patient?.lastname}
+                </td>
+                <td style={styles.cell}>{appointment.rating}</td>
+                <td style={styles.cell}>{appointment.comment}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div style={styles.patientInfo}>
+        <h2 style={styles.sectionTitle}>Feedback 🗣</h2>
+        <form
+          style={styles.form}
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSubmit();
+          }}
+        >
+          <textarea
+            placeholder="Enter feedback here..."
+            style={styles.textarea}
+            value={feedback}
+            onChange={(e) => setFeedback(e.target.value)}
+          ></textarea>
+          <div style={styles.buttonGroup}>
+            <button type="button" style={styles.button} onClick={handleSubmit}>
+              Submit feedback
+            </button>
+          </div>
+        </form>
+      </div>
+    </main>
+  );
+};
 
 const styles = {
   main: {
