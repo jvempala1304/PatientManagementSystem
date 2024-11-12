@@ -1,146 +1,156 @@
-import React, { useState } from 'react';
-
-// Hardcoded data
-const patients = [
-  { id: '1', name: 'Thomas Binze' },
-  { id: '2', name: 'Jane Smith' },
-  { id: '3', name: 'Robert Johnson' },
-];
-
-const doctors = [
-  { id: '1', name: 'Dr. John Doe' },
-  { id: '2', name: 'Dr. Emily Johnson' },
-  { id: '3', name: 'Dr. Michael Brown' },
-];
-
-const clinics = [
-  { id: '1', name: 'Waterloo Clinic' },
-  { id: '2', name: 'Downtown Clinic' },
-  { id: '3', name: 'Central Hospital' },
-];
-
-// Hardcoded appointments data
-const mockAppointments = [
-  {
-    _id: "1",
-    patientId: '1',
-    doctorId: '1',
-    clinicId: '1',
-    start: { dateTime: "2024-10-15T14:15:00Z", timeZone: "UTC" },
-    end: { dateTime: "2024-10-15T14:45:00Z", timeZone: "UTC" },
-    duration: 30,
-    status: "scheduled",
-    reason: "Follow-up appointment",
-    notes: "Review test results",
-  },
-  {
-    _id: "2",
-    patientId: '2',
-    doctorId: '2',
-    clinicId: '2',
-    start: { dateTime: "2024-11-01T09:00:00Z", timeZone: "UTC" },
-    end: { dateTime: "2024-11-01T09:30:00Z", timeZone: "UTC" },
-    duration: 30,
-    status: "scheduled",
-    reason: "Annual check-up",
-    notes: "",
-  }
-];
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import DatePicker from 'react-datepicker';
+import "react-datepicker/dist/react-datepicker.css";
 
 const AppointmentManagement = () => {
-  const [appointments, setAppointments] = useState(mockAppointments);
+  const [appointments, setAppointments] = useState([]);
+  const [clinics, setClinics] = useState([]);
+  const [doctors, setDoctors] = useState([]);
   const [formData, setFormData] = useState({
-    patientId: '',
+    patientId: '670354b793f416224daa6321', // Hardcoded patient ID
     doctorId: '',
     clinicId: '',
-    start: { dateTime: '', timeZone: 'UTC' },
-    end: { dateTime: '', timeZone: 'UTC' },
-    duration: 30,
-    status: 'scheduled',
+    start: null,
     reason: '',
     notes: '',
+    type: 'in-person',
+    customerTimeZone: 'America/New_York',
+    smsNotificationsEnabled: true
   });
-  const [selectedAppointment, setSelectedAppointment] = useState(null);
+  const [patientDetails, setPatientDetails] = useState({});
+  const [message, setMessage] = useState('');
+  const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    fetchPatientDetails();
+    fetchClinics();
+    fetchAppointments();
+  }, []);
+
+  const fetchPatientDetails = async () => {
+    try {
+      const response = await axios.get(`http://localhost:5000/api/patients?id=${formData.patientId}`);
+      setPatientDetails(response.data);
+    } catch (error) {
+      console.error('Error fetching patient details:', error);
+      setMessage('Error fetching patient details');
+    }
+  };
+
+  const fetchClinics = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/api/clinics');
+      setClinics(response.data);
+    } catch (error) {
+      console.error('Error fetching clinics:', error);
+      setMessage('Error fetching clinics');
+    }
+  };
+
+  const fetchDoctors = async (clinicId) => {
+    try {
+      const response = await axios.get(`http://localhost:5000/api/doctors?clinicId=${clinicId}`);
+      setDoctors(response.data);
+    } catch (error) {
+      console.error('Error fetching doctors:', error);
+      setMessage('Error fetching doctors');
+    }
+  };
+
+  const fetchAppointments = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/api/appointments');
+      setAppointments(response.data);
+    } catch (error) {
+      console.error('Error fetching appointments:', error);
+      setMessage('Error fetching appointments');
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-  };
+    setErrors({ ...errors, [name]: '' });
 
-  const handleDateTimeChange = (field, value) => {
-    setFormData({ ...formData, [field]: { ...formData[field], dateTime: value } });
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    if (selectedAppointment) {
-      // Update existing appointment
-      setAppointments((prev) =>
-        prev.map((appointment) =>
-          appointment._id === selectedAppointment ? { ...formData, _id: selectedAppointment } : appointment
-        )
-      );
-      alert("Appointment updated");
-    } else {
-      // Create new appointment
-      const newAppointment = { ...formData, _id: `${appointments.length + 1}` };
-      setAppointments((prev) => [...prev, newAppointment]);
-      alert("Appointment created");
+    if (name === 'clinicId') {
+      fetchDoctors(value);
     }
-
-    resetForm();
   };
 
-  const handleDelete = (id) => {
-    if(window.confirm("Are you sure you want to delete this appointment?")) {
-      setAppointments((prev) => prev.filter((appointment) => appointment._id !== id));
-      alert("Appointment deleted");
+  const handleDateChange = (date) => {
+    setFormData({ ...formData, start: date });
+    setErrors({ ...errors, start: '' });
+  };
+
+  const validateForm = () => {
+    let newErrors = {};
+    if (!formData.doctorId) newErrors.doctorId = 'Please select a doctor';
+    if (!formData.clinicId) newErrors.clinicId = 'Please select a clinic';
+    if (!formData.start) newErrors.start = 'Please select a start date and time';
+    if (!formData.reason.trim()) newErrors.reason = 'Please enter a reason for the appointment';
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+
+    try {
+      const appointmentData = {
+        ...formData,
+        start: { dateTime: formData.start.toISOString(), timeZone: 'UTC' },
+      };
+      const response = await axios.post('http://localhost:5000/api/appointments', appointmentData);
+      setAppointments([...appointments, response.data]);
+      setMessage('Appointment created successfully');
+      resetForm();
+    } catch (error) {
+      console.error('Error submitting appointment:', error);
+      setMessage(error.response?.data?.message || 'Error submitting appointment');
     }
   };
 
   const resetForm = () => {
-    setSelectedAppointment(null);
     setFormData({
-      patientId: '',
+      patientId: '670354b793f416224daa6321',
       doctorId: '',
       clinicId: '',
-      start: { dateTime: '', timeZone: 'UTC' },
-      end: { dateTime: '', timeZone: 'UTC' },
-      duration: 30,
-      status: 'scheduled',
+      start: null,
       reason: '',
       notes: '',
+      type: 'in-person',
+      customerTimeZone: 'America/New_York',
+      smsNotificationsEnabled: true
     });
+    setErrors({});
+  };
+
+  const generateTimeSlots = () => {
+    let slots = [];
+    for (let hour = 9; hour < 17; hour++) {
+      for (let minute of ['00', '30']) {
+        slots.push(new Date(0, 0, 0, hour, parseInt(minute)));
+      }
+    }
+    return slots;
   };
 
   return (
     <div style={styles.container}>
       <h2 style={styles.sectionTitle}>Appointment Management</h2>
       
+      {message && <p style={styles.message}>{message}</p>}
+
+      <div>
+        <label>First Name:</label>
+        <span>{patientDetails.firstname}</span>
+        <label>Last Name:</label>
+        <span>{patientDetails.lastname}</span>
+      </div>
+
       <form onSubmit={handleSubmit} style={styles.form}>
-        <select
-          name="patientId"
-          value={formData.patientId}
-          onChange={handleInputChange}
-          style={styles.input}
-        >
-          <option value="">Select Patient</option>
-          {patients.map(patient => (
-            <option key={patient.id} value={patient.id}>{patient.name}</option>
-          ))}
-        </select>
-        <select
-          name="doctorId"
-          value={formData.doctorId}
-          onChange={handleInputChange}
-          style={styles.input}
-        >
-          <option value="">Select Doctor</option>
-          {doctors.map(doctor => (
-            <option key={doctor.id} value={doctor.id}>{doctor.name}</option>
-          ))}
-        </select>
         <select
           name="clinicId"
           value={formData.clinicId}
@@ -149,39 +159,39 @@ const AppointmentManagement = () => {
         >
           <option value="">Select Clinic</option>
           {clinics.map(clinic => (
-            <option key={clinic.id} value={clinic.id}>{clinic.name}</option>
+            <option key={clinic._id} value={clinic._id}>{clinic.name}</option>
           ))}
         </select>
-        <input
-          type="text"
-          placeholder="Start Date & Time (YYYY-MM-DDTHH:mm)"
-          value={formData.start.dateTime}
-          onChange={(e) => handleDateTimeChange('start', e.target.value)}
-          style={styles.input}
-        />
-        <input
-          type="text"
-          placeholder="End Date & Time (YYYY-MM-DDTHH:mm)"
-          value={formData.end.dateTime}
-          onChange={(e) => handleDateTimeChange('end', e.target.value)}
-          style={styles.input}
-        />
-        <input
-          type="number"
-          placeholder="Duration (min)"
-          name="duration"
-          value={formData.duration}
+        {errors.clinicId && <span style={styles.error}>{errors.clinicId}</span>}
+
+        <select
+          name="doctorId"
+          value={formData.doctorId}
           onChange={handleInputChange}
           style={styles.input}
-        />
-        <input
-          type="text"
-          placeholder="Status"
-          name="status"
-          value={formData.status}
-          onChange={handleInputChange}
+        >
+          <option value="">Select Doctor</option>
+          {doctors.map(doctor => (
+            <option key={doctor._id} value={doctor._id}>{`${doctor.firstName} ${doctor.lastName}`}</option>
+          ))}
+        </select>
+        {errors.doctorId && <span style={styles.error}>{errors.doctorId}</span>}
+
+        <DatePicker
+          selected={formData.start}
+          onChange={handleDateChange}
+          showTimeSelect
+          timeIntervals={30}
+          timeCaption="Time"
+          dateFormat="MMMM d, yyyy h:mm aa"
+          minTime={new Date(0, 0, 0, 9, 0)}
+          maxTime={new Date(0, 0, 0, 17, 0)}
+          includeTimes={generateTimeSlots()}
+          placeholderText="Select Start Date and Time"
           style={styles.input}
         />
+        {errors.start && <span style={styles.error}>{errors.start}</span>}
+
         <input
           type="text"
           placeholder="Reason for Appointment"
@@ -190,6 +200,8 @@ const AppointmentManagement = () => {
           onChange={handleInputChange}
           style={styles.input}
         />
+        {errors.reason && <span style={styles.error}>{errors.reason}</span>}
+        
         <textarea
           placeholder="Notes"
           name="notes"
@@ -199,7 +211,7 @@ const AppointmentManagement = () => {
         />
         
         <button type="submit" style={styles.button}>
-            {selectedAppointment ? 'Update Appointment' : 'Create Appointment'}
+          Create Appointment
         </button>
       </form>
 
@@ -207,36 +219,24 @@ const AppointmentManagement = () => {
       
       <table style={styles.table}>
         <thead>
-            <tr>
-                <th>Patient Name</th>
-                <th>Doctor Name</th>
-                <th>Clinic Name</th>
-                <th>Start</th>
-                <th>End</th>
-                <th>Actions</th>
-            </tr>
+          <tr>
+            <th>Patient Name</th>
+            <th>Doctor Name</th>
+            <th>Clinic Name</th>
+            <th>Start</th>
+            <th>Status</th>
+          </tr>
         </thead>
         <tbody>
-            {appointments.map((appointment) => (
-                <tr key={appointment._id}>
-                    <td>{patients.find(p => p.id === appointment.patientId)?.name}</td>
-                    <td>{doctors.find(d => d.id === appointment.doctorId)?.name}</td>
-                    <td>{clinics.find(c => c.id === appointment.clinicId)?.name}</td>
-                    <td>{new Date(appointment.start.dateTime).toLocaleString()}</td>
-                    <td>{new Date(appointment.end.dateTime).toLocaleString()}</td>
-                    <td>
-                        <button onClick={() => {
-                            setSelectedAppointment(appointment._id);
-                            setFormData({
-                                ...appointment,
-                                start: { dateTime: appointment.start.dateTime },
-                                end: { dateTime: appointment.end.dateTime }
-                            });
-                        }} style={styles.actionButton}>Edit</button>
-                        <button onClick={() => handleDelete(appointment._id)} style={styles.actionButton}>Delete</button>
-                    </td>
-                </tr>
-            ))}
+          {appointments.map((appointment) => (
+            <tr key={appointment._id}>
+              <td>{`${appointment.patientId.firstname} ${appointment.patientId.lastname}`}</td>
+              <td>{`${appointment.doctorId.firstName} ${appointment.doctorId.lastName}`}</td>
+              <td>{appointment.clinicId.name}</td>
+              <td>{new Date(appointment.start.dateTime).toLocaleString()}</td>
+              <td>{appointment.status}</td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>
@@ -285,12 +285,19 @@ const styles = {
     border: 'none',
     cursor: 'pointer'
   },
+  error: {
+    color: 'red',
+    fontSize: '14px',
+  },
+  message: {
+    marginBottom: '10px',
+    padding: '10px',
+    backgroundColor: '#e4f0fe',
+    borderRadius: '5px',
+  },
   table: {
     width: '100%',
     borderCollapse: 'collapse'
-  },
-  actionButton: {
-    margin: '0 5px'
   },
 };
 

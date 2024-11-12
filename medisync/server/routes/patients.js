@@ -19,11 +19,21 @@ router.post("/", async (req, res) => {
   }
 });
 
-// API to view a user profile by email or phone
+// API to view a user profile by id, email, or phone
 router.get("/", async (req, res) => {
   try {
-    const { email, phone } = req.query;
-    const query = email ? { email } : phone ? { phone } : {};
+    const { id, email, phone } = req.query;
+    let query = {};
+
+    if (id) {
+      query = { _id: id };
+    } else if (email) {
+      query = { email };
+    } else if (phone) {
+      query = { phone };
+    } else {
+      return res.status(400).json({ message: "Please provide an id, email, or phone number" });
+    }
 
     const user = await User.findOne(query);
     if (!user) {
