@@ -5,3 +5,4 @@ export { default as Dashboard } from './Dashboard/Dashboard';
 export { default as Navigation } from './Navigation/Navigation';
 export { default as Search } from './Search/Search';
 export { default as Banner } from './Banner/banner';
+export { default as Prescription } from './Prescription/Prescription';

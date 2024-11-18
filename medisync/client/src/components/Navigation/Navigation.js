@@ -17,7 +17,7 @@ const Navigation = () => (
         </Link>
       </li>
       <li>
-        <Link to="/" style={styles.link}>
+        <Link to="/medication-search" style={styles.link}>
           Appointment Management
         </Link>
       </li>
