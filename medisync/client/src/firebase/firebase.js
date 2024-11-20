@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
+import { getMessaging, getToken } from "firebase/messaging";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBTJXGNxRMIPb_CeqgzKd5ZJfVpfdNBcqE",
@@ -12,5 +13,17 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const messaging = getMessaging(app);
 
-export { app, auth };
+const generateToken = async () => {
+  const permission = await Notification.requestPermission();
+  if (permission === "granted") {
+    const token = await getToken(messaging, {
+      vapidKey:
+        "BGs6t6vdzUnEFWA32WLg6uAVSQTu6qMjpRw-2AxQ6kE7R41dr-uX1c0eDWhHmX7m9UfzkJbtwUrc9y_vZoBV4YE",
+    });
+    console.log(token);
+  }
+};
+
+export { app, auth, messaging, generateToken };

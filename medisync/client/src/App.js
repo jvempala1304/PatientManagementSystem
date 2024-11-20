@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
-// import { generateToken } from "./firebase/firebase";
+
+import { generateToken, messaging } from "./firebase/firebase";
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import {
   Home,
@@ -11,13 +12,14 @@ import {
 } from './pages';
 import PrescriptionManagementPage from './pages/PrescriptionManagement/PrescriptionManagement';
 import AppointmentManagementPage from './pages/AppointmentManagement/AppointmentManagement';
-
+import { onMessage } from "firebase/messaging";
 function App() {
   useEffect(() => {
-    // generateToken();
+    generateToken();
+    onMessage(messaging, (payload) => {
+      console.log(payload);
+    });
   }, []);
-
-  // This is mock data. In a real application, you'd probably fetch this from an API or pass it from a parent component.
 
   const patientData = {
     _id: '670337ca49fe1c0964e974f3',
