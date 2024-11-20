@@ -1,10 +1,10 @@
-import React from 'react';
-import { TopNavigation, Footer, MainContent } from '../../components';
-const Login = () => {
+import React from "react";
+import { TopNavigation, Footer, Login } from "../../components";
+const LoginPage = () => {
   return (
     <div className="container" style={styles.container}>
       <TopNavigation />
-      <MainContent />
+      <Login />
       <div>
         <Footer />
       </div>
@@ -12,6 +12,6 @@ const Login = () => {
   );
 };
 const styles = {
-  container: { BoxSizing: 'border-box' },
+  container: { BoxSizing: "border-box" },
 };
-export default Login;
+export default LoginPage;

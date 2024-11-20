@@ -7,31 +7,70 @@ import {
   doSignInWithEmailAndPassword,
   doSignInWithGoogle,
 } from "../../firebase/auth";
-// import { useAuth } from "../../contexts/authContext";
+
 const Login = () => {
-  // const { userLoggedIn } = useAuth();
   const email = useRef();
   const password = useRef();
   const [isSigningIn, setIsSigningIn] = useState(false);
+  const [error, setError] = useState("");
+
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validateInputs = () => {
+    const emailValue = email.current.value;
+    const passwordValue = password.current.value;
+
+    if (!emailValue) {
+      setError("Email is required.");
+      return false;
+    } else if (!validateEmail(emailValue)) {
+      setError("Invalid email format.");
+      return false;
+    }
+
+    if (!passwordValue) {
+      setError("Password is required.");
+      return false;
+    } else if (passwordValue.length < 6) {
+      setError("Password should be at least 6 characters.");
+      return false;
+    }
+
+    setError("");
+    return true;
+  };
+
   const loginWithGoogle = async (e) => {
     if (!isSigningIn) {
       setIsSigningIn(true);
       doSignInWithGoogle().catch((err) => {
         setIsSigningIn(false);
+        setError("Google sign-in failed.");
       });
     }
   };
+
   const loginWithEmail = async (e) => {
-    if (!isSigningIn) {
+    e.preventDefault();
+    if (!isSigningIn && validateInputs()) {
       setIsSigningIn(true);
       doSignInWithEmailAndPassword(
         email.current.value,
         password.current.value
       ).catch((err) => {
         setIsSigningIn(false);
+        setError("Email or password is incorrect.");
       });
     }
   };
+
+  const clearErrorOnInputChange = () => {
+    setError("");
+  };
+
   return (
     <main style={styles.main}>
       <div style={styles.mainLeft}>
@@ -44,7 +83,7 @@ const Login = () => {
       </div>
       <div style={styles.mainRight}>
         <p style={styles.text}>Login</p>
-        <form action="#">
+        <form action="#" onSubmit={loginWithEmail}>
           <div style={styles.one}>
             <div>
               <img style={styles.icon} src={email_image} alt="Email Icon" />
@@ -56,6 +95,7 @@ const Login = () => {
               name="email"
               id="email"
               ref={email}
+              onChange={clearErrorOnInputChange}
             />
           </div>
           <div style={styles.one}>
@@ -69,28 +109,20 @@ const Login = () => {
             <input
               style={styles.inputs}
               type="password"
-              placeholder="password"
+              placeholder="Password"
               name="password"
               id="password"
               ref={password}
+              onChange={clearErrorOnInputChange}
             />
           </div>
+          <div style={styles.btns}>
+            <button style={styles.btn} type="submit">
+              Login
+            </button>
+          </div>
+          {error && <p style={styles.error}>{error}</p>}
         </form>
-        <div
-          style={{
-            textAlign: "right",
-            margin: "10px 0",
-          }}
-        >
-          <a href="#login" style={styles.three}>
-            Don't have an account? Sign Up
-          </a>
-        </div>
-        <div style={styles.btns}>
-          <button style={styles.btn} onClick={loginWithEmail}>
-            Login
-          </button>
-        </div>
         <div style={styles.divider}></div>
         <div style={styles.btns}>
           <button style={styles.btn} onClick={loginWithGoogle}>
@@ -153,12 +185,6 @@ const styles = {
     margin: "15px 0",
     position: "relative",
   },
-  two: {
-    marginTop: "30px !important",
-  },
-  three: {
-    textAlign: "right !important",
-  },
   icon: {
     position: "absolute",
     top: "50%",
@@ -167,7 +193,6 @@ const styles = {
     height: "18px",
     left: "25px",
   },
-
   btns: {
     width: "100%",
     display: "flex",
@@ -197,6 +222,11 @@ const styles = {
     backgroundColor: "#ccc",
     width: "100%",
     margin: "20px 0",
+  },
+  error: {
+    color: "red",
+    textAlign: "center",
+    marginTop: "10px",
   },
 };
 

@@ -1,203 +1,249 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { getPrescriptions, createPrescription } from '../../services/api';
+import {
+  getPrescriptionsByPatient,
+  createPrescription,
+} from '../../services/api';
 
 const Prescription = () => {
-  const [prescriptions, setPrescriptions] = useState([]);
-  const [formData, setFormData] = useState({
-    name: '',
-    dosage: '',
-    frequency: '',
-    duration: '',
-    instructions: '',
-  });
-  const [isLoading, setIsLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
-
   const location = useLocation();
-  const data = location.state || {};
-  const patientData = data.patientData || {};
-  const patient = patientData.patientId || {};
-  const clinic = patientData.clinicId || {};
-  const doctorId = patientData.doctorId || '';
-  const startTime = patientData.start || '';
-  const endTime = patientData.end || '';
+  const appointment = location.state || {}; // Get appointment information from location
+  console.log(appointment.patientData.age);
+  const patientId = appointment.patientData._id; // Get patient information
+  const [prescription, setPrescription] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
 
-  const fetchPrescriptions = async () => {
-    const prescriptions = await getPrescriptions();
-    setPrescriptions(prescriptions);
-  };
+  // Fetch prescriptions for the patient
+  useEffect(() => {
+    if (patientId) {
+      getPrescriptionsByPatient(patientId)
+        .then((data) => {
+          if (data && data.length > 0) {
+            setPrescription(data[data.length - 1]); // Use the most recent prescription
+          } else {
+            alert('No prescription records for this patient');
+          }
+        })
+        .catch((error) => {
+          console.error('Failed to fetch prescription data:', error);
+        });
+    }
+  }, [patientId]);
 
-  const handleCreatePrescription = async () => {
-    setIsLoading(true);
-    const prescriptionData = {
-      medications: [
-        {
-          name: formData.name,
-          dosage: formData.dosage,
-          frequency: formData.frequency,
-          duration: formData.duration,
-        },
-      ],
-      patientId: patient._id,
-      clinicId: clinic._id,
-      doctorId: doctorId._id,
-      startTime,
-      endTime,
-      instructions: formData.instructions,
+  // Submit a new prescription
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!patientId._id) return;
+
+    const newPrescription = {
+      name: e.target.name.value,
+      dosage: e.target.dosage.value,
+      frequency: e.target.frequency.value,
+      duration: e.target.duration.value,
+      instructions: e.target.instructions.value,
+      patientId: patientId._id,
     };
 
-    try {
-      await createPrescription(prescriptionData);
-      setFormData({
-        name: '',
-        dosage: '',
-        frequency: '',
-        duration: '',
-        instructions: '',
-      }); // 清空输入框
-      setSuccessMessage('Prescription submitted successfully!'); // 显示成功消息
-      setTimeout(() => setSuccessMessage(''), 3000); // 3秒后隐藏成功消息
-      fetchPrescriptions(); // 重新加载处方列表
-    } catch (error) {
-      console.error('Error creating prescription:', error);
-    } finally {
-      setIsLoading(false);
-    }
+    createPrescription(newPrescription)
+      .then(() => {
+        alert('Prescription submitted successfully!');
+        setShowPopup(true);
+        // Refresh prescription data after submission
+        return getPrescriptionsByPatient(patientId);
+      })
+      .then((data) => {
+        if (data && data.length > 0) {
+          setPrescription(data[data.length - 1]);
+        }
+      })
+      .catch((error) => {
+        console.error('Failed to create prescription:', error);
+      });
   };
 
-  const handleInputChange = (field, value) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      [field]: value,
-    }));
-  };
-
-  useEffect(() => {
-    fetchPrescriptions();
-  }, []);
+  // Ensure patientId exists before accessing it
+  const firstName = appointment.patientData.patientId?.firstname || '';
+  const lastName = appointment.patientData.patientId?.lastname || '';
+  const startTime = appointment.patientData.start.dateTime || '';
+  const endTime = appointment.patientData.end.dateTime || '';
+  const age = appointment.patientData.age || '';
+  const gender = appointment.patientData.gender || 'Male';
+  const address = appointment.address || ''; // Use this field if available
 
   return (
     <div style={styles.container}>
-      {isLoading && (
+      {showPopup && (
         <div style={styles.loadingOverlay}>
-          <div style={styles.loadingBox}>Submitting...</div>
+          <div style={styles.loadingBox}>
+            Prescription submitted successfully!
+          </div>
         </div>
       )}
-      <div style={styles.content}>
-        {successMessage && (
-          <div style={styles.successMessage}>{successMessage}</div>
-        )}
+      <div style={styles.layout}>
+        <div style={styles.contentWrapper}>
+          <main style={styles.mainContent}>
+            <div style={styles.profileCard}>
+              <form style={styles.infoContainer} onSubmit={handleSubmit}>
+                <h3 style={styles.title}>📋 Patient Information</h3>
+                <div style={styles.row}>
+                  <div style={styles.field}>
+                    <label style={styles.label}>First Name:</label>
+                    <input
+                      type="text"
+                      name="firstname"
+                      style={styles.input}
+                      defaultValue={firstName}
+                      disabled
+                    />
+                  </div>
+                  <div style={styles.field}>
+                    <label style={styles.label}>Last Name:</label>
+                    <input
+                      type="text"
+                      name="lastname"
+                      style={styles.input}
+                      defaultValue={lastName}
+                      disabled
+                    />
+                  </div>
+                </div>
+                <div style={styles.row}>
+                  <div style={styles.field}>
+                    <label style={styles.label}>Start Time:</label>
+                    <input
+                      type="text"
+                      name="start"
+                      style={styles.input}
+                      defaultValue={startTime || ''}
+                      disabled
+                    />
+                  </div>
+                  <div style={styles.field}>
+                    <label style={styles.label}>End Time:</label>
+                    <input
+                      type="text"
+                      name="end"
+                      style={styles.input}
+                      defaultValue={endTime || ''}
+                      disabled
+                    />
+                  </div>
+                </div>
+                <div style={styles.row}>
+                  <div style={styles.field}>
+                    <label style={styles.label}>Age:</label>
+                    <input
+                      type="number"
+                      name="age"
+                      style={styles.input}
+                      defaultValue={age}
+                      disabled
+                    />
+                  </div>
+                  <div style={styles.field}>
+                    <label style={styles.label}>Gender:</label>
+                    <select
+                      name="sex"
+                      style={styles.input}
+                      defaultValue={gender}
+                      disabled
+                    >
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                    </select>
+                  </div>
+                </div>
+                <div style={styles.row}>
+                  <div style={styles.field}>
+                    <label style={styles.label}>Address:</label>
+                    <input
+                      type="text"
+                      name="address"
+                      style={styles.input}
+                      defaultValue={address}
+                      disabled
+                    />
+                  </div>
+                </div>
 
-        <div style={styles.top}>
-          <h2 style={styles.sectionTitle}>📋 Patient Information</h2>
-          <div style={styles.patientInfo}>
-            <div>
-              <span style={styles.text}>Name:</span>
-              <span style={styles.underline}>
-                {`${patient.firstname || 'N/A'} ${patient.lastname || ''}`}
-              </span>
-            </div>
-            <div>
-              <span style={styles.text}>Age:</span>
-              <span style={styles.underline}>{patientData.age || 'N/A'}</span>
-            </div>
-            <div>
-              <span style={styles.text}>Gender:</span>
-              <span style={styles.underline}>
-                {patientData.gender || 'N/A'}
-              </span>
-            </div>
-          </div>
-        </div>
+                <h3 style={styles.title}>📋 Medication Information</h3>
+                <div style={styles.row}>
+                  <div style={styles.field}>
+                    <label style={styles.label}>Medication Name:</label>
+                    <input
+                      type="text"
+                      name="name"
+                      style={styles.input}
+                      defaultValue={prescription?.name || ''}
+                      disabled={!isEditing}
+                    />
+                  </div>
+                  <div style={styles.field}>
+                    <label style={styles.label}>Dosage:</label>
+                    <input
+                      type="text"
+                      name="dosage"
+                      style={styles.input}
+                      defaultValue={prescription?.dosage || ''}
+                      disabled={!isEditing}
+                    />
+                  </div>
+                </div>
+                <div style={styles.row}>
+                  <div style={styles.field}>
+                    <label style={styles.label}>Frequency:</label>
+                    <input
+                      type="text"
+                      name="frequency"
+                      style={styles.input}
+                      defaultValue={prescription?.frequency || ''}
+                      disabled={!isEditing}
+                    />
+                  </div>
+                  <div style={styles.field}>
+                    <label style={styles.label}>Duration:</label>
+                    <input
+                      type="text"
+                      name="duration"
+                      style={styles.input}
+                      defaultValue={prescription?.duration || ''}
+                      disabled={!isEditing}
+                    />
+                  </div>
+                </div>
+                <div style={styles.row}>
+                  <div style={styles.field}>
+                    <label style={styles.label}>Medication Instructions:</label>
+                    <input
+                      type="text"
+                      name="instructions"
+                      style={styles.input}
+                      defaultValue={prescription?.instructions || ''}
+                      disabled={!isEditing}
+                    />
+                  </div>
+                </div>
 
-        <div style={styles.bottom}>
-          <h2 style={styles.sectionTitle}>📋 Medication Information</h2>
-          <div style={styles.patientInfo}>
-            <div>
-              <span style={styles.text}>Medication Name:</span>
-              <span>
-                <input
-                  type="text"
-                  style={styles.input}
-                  value={formData.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
-                />
-              </span>
+                <div style={styles.buttonContainer}>
+                  <button
+                    type="submit"
+                    style={{ ...styles.button, marginTop: '20px' }}
+                    disabled={!isEditing}
+                  >
+                    Submit Prescription
+                  </button>
+                  <button
+                    type="button"
+                    style={{ ...styles.button, marginTop: '20px' }}
+                    onClick={() => setIsEditing(!isEditing)}
+                  >
+                    {isEditing ? 'Cancel' : 'Edit'}
+                  </button>
+                </div>
+              </form>
             </div>
-          </div>
-          <div style={styles.patientInfo}>
-            <div>
-              <span style={styles.text}>Dosage:</span>
-              <span>
-                <input
-                  type="text"
-                  style={styles.input}
-                  value={formData.dosage}
-                  onChange={(e) => handleInputChange('dosage', e.target.value)}
-                />
-              </span>
-            </div>
-            <div style={styles.left}>
-              <span style={styles.text}>Frequency:</span>
-              <span>
-                <input
-                  type="text"
-                  style={styles.input}
-                  value={formData.frequency}
-                  onChange={(e) =>
-                    handleInputChange('frequency', e.target.value)
-                  }
-                />
-              </span>
-            </div>
-          </div>
-          <div style={styles.patientInfo}>
-            <div>
-              <span style={styles.text}>Duration:</span>
-              <span>
-                <input
-                  type="text"
-                  style={styles.input}
-                  value={formData.duration}
-                  onChange={(e) =>
-                    handleInputChange('duration', e.target.value)
-                  }
-                />
-              </span>
-            </div>
-          </div>
-          <div style={styles.patientInfo}>
-            <div>
-              <span style={styles.text}>Medication Notes:</span>
-              <span>
-                <input
-                  type="text"
-                  style={styles.inputs}
-                  value={formData.instructions}
-                  onChange={(e) =>
-                    handleInputChange('instructions', e.target.value)
-                  }
-                />
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div style={styles.bts}>
-          <div style={styles.buttonGroup}>
-            <button
-              type="button"
-              style={styles.button}
-              onClick={handleCreatePrescription}
-              disabled={isLoading}
-            >
-              Submit Prescription
-            </button>
-            <button type="button" style={styles.button}>
-              Cancel
-            </button>
-          </div>
+          </main>
         </div>
       </div>
     </div>
@@ -252,84 +298,93 @@ const styles = {
     padding: '40px 40px',
     borderRadius: '15px',
   },
-  top: {
-    width: '50%',
+  title: {
+    fontSize: '20px',
+    color: 'rgb(56, 147, 227)',
+    marginBottom: '10px',
   },
-  bottom: { width: '50%' },
-  left: {
-    width: '60%',
+  layout: {
+    width: '65%',
+    display: 'flex',
+    flexDirection: 'column',
+    minHeight: '100vh',
   },
-  patientInfo: {
-    padding: '15px 0 0 20px',
+  contentWrapper: {
+    display: 'flex',
+    flex: 1,
+    padding: '20px',
+  },
+  mainContent: {
+    flex: 1,
+    padding: '20px',
+    backgroundColor: 'rgb(234, 244, 254)',
+    overflowY: 'auto',
+  },
+  profileCard: {
+    backgroundColor: 'rgba(255, 255, 255, 0.6)',
+    backdropFilter: 'blur(10px)',
+    borderRadius: '10px',
+    padding: '20px',
+    maxWidth: '800px',
+    margin: '0 auto',
+  },
+  imageContainer: {
+    display: 'flex',
+    justifyContent: 'center',
+    marginBottom: '20px',
+  },
+  profileImage: {
+    width: '200px',
+    height: '200px',
+    borderRadius: '50%',
+    objectFit: 'cover',
+    border: '3px solid rgb(56, 147, 227)',
+  },
+  infoContainer: {
+    width: '90%',
+    padding: '0 20px',
+  },
+  row: {
     display: 'flex',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    marginBottom: '15px',
   },
-  sectionTitle: {
-    color: 'rgb(56, 147, 227)',
-    fontSize: '20px',
-    fontWeight: 'bold',
+  field: {
+    width: '48%',
   },
-  text: {
-    color: '#666',
-    fontSize: '19px',
+  fields: {
+    width: '100%',
   },
-  underline: {
-    display: 'inline-block',
-    borderBottom: '1px solid #ccc',
-    paddingBottom: '2px',
-    width: '200px',
-    color: '#7a7a7a',
-    fontSize: '18px',
-    textAlign: 'center',
+  label: {
+    color: 'rgb(112, 112, 112)',
+    fontSize: '14px',
+    marginBottom: '5px',
+    display: 'block',
   },
-  textunderline: {
-    textDecoration: 'underline',
-    color: '#7a7a7a',
-    fontSize: '18px',
-    margin: '0 15px',
-    textAlign: 'center',
-    textDecorationColor: '#ccc',
+  input: {
+    width: '95%',
+    padding: '9px 12px',
+    borderRadius: '5px',
+    border: '1px solid #ccc',
+    fontSize: '16px',
   },
-  bts: {
-    width: '50%',
-  },
-  buttonGroup: {
+  buttonContainer: {
     display: 'flex',
-    gap: '10px',
-    marginTop: '10px',
+    justifyContent: 'space-between',
+    marginTop: '20px',
+    padding: '0 20px',
+    paddingRight: '40px',
   },
   button: {
     width: '40%',
-    height: '40px',
+    height: '50px',
     color: 'rgb(56, 147, 227)',
     backgroundColor: '#e4f0fe',
-    marginTop: '10px',
+    borderRadius: '5px',
     textAlign: 'center',
     fontSize: '18px',
-    borderRadius: '10px',
     border: 'none',
     cursor: 'pointer',
-  },
-  input: {
-    border: 'none',
-    borderBottom: '1px solid #ccc',
-    width: '200px',
-    otherStyles: 'padding: 7px 0',
-    padding: '2px 15px',
-    color: '#7a7a7a',
-    fontSize: '18px',
-    backgroundColor: 'transparent',
-  },
-  inputs: {
-    border: 'none',
-    borderBottom: '1px solid #ccc',
-    width: '600px',
-    otherStyles: 'padding: 5px 0',
-    padding: '2px 15px',
-    color: '#7a7a7a',
-    fontSize: '18px',
-    backgroundColor: 'transparent',
   },
 };
 

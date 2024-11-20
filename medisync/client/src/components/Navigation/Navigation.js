@@ -17,10 +17,21 @@ const Navigation = () => (
         </Link>
       </li>
       <li>
-        <Link to="/medication-search" style={styles.link}>
+        <Link to="/" style={styles.link}>
           Appointment Management
         </Link>
       </li>
+
+      <li>
+
+<Link to="/patient-profile" style={styles.link}>
+
+  Profile
+
+</Link>
+
+</li>
+
       <li>
         <Link to="/login" style={styles.link}>
           Logout
