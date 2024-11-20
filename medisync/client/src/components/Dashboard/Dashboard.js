@@ -1,66 +1,137 @@
-import React from 'react';
-const patients = [
-  { id: '001', name: 'Kevin' },
-  { id: '002', name: 'Sophia' },
-  { id: '003', name: 'Ethan' },
-  { id: '004', name: 'Jordan' },
-  { id: '005', name: 'Liam' },
-  { id: '006', name: 'Grace' },
-];
-const Dashboard = () => (
-  <main style={styles.main}>
-    <div style={styles.appointmentList}>
-      <h2 style={styles.sectionTitle}>Patient Appointment List 📋</h2>
-      <table style={styles.table}>
-        <thead>
-          <tr>
-            <th style={styles.headerCell}>No.</th>
-            <th style={styles.headerCell}>Name</th>
-          </tr>
-        </thead>
-        <tbody>
-          {patients.map((patient, index) => (
-            <tr
-              key={index}
-              style={{
-                ...styles.row,
-                backgroundColor: index % 2 === 0 ? '#FFFFFF' : '#f7faff',
-              }}
-            >
-              <td style={styles.cell}>{patient.id}</td>
-              <td style={styles.cell}>{patient.name}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { getAppointments, getAppointment } from '../../services/api';
 
-    <div style={styles.patientInfo}>
-      <h2 style={styles.sectionTitle}>Patient Information 🩺</h2>
-      <form style={styles.form}>
-        <input type="text" placeholder="patient's name" style={styles.input} />
-        <input type="text" placeholder="patient's age" style={styles.input} />
-        <input
-          type="text"
-          placeholder="patient's gender"
-          style={styles.input}
-        />
-        <textarea
-          placeholder="Description of the condition"
-          style={styles.textarea}
-        ></textarea>
-        <div style={styles.buttonGroup}>
-          <button type="button" style={styles.button}>
-            Generate prescription
-          </button>
-          <button type="button" style={styles.button}>
-            Change appointment time
-          </button>
-        </div>
-      </form>
-    </div>
-  </main>
-);
+const Dashboard = () => {
+  const [patients, setPatients] = useState([]);
+  const [selectedPatient, setSelectedPatient] = useState(null);
+  const navigate = useNavigate();
+
+  const handleButtonClick = () => {
+    if (selectedPatient) {
+      navigate('/prescription-management', {
+        state: { patientData: selectedPatient },
+      });
+    } else {
+      alert('Please select a patient first.');
+    }
+  };
+
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      const data = await getAppointments();
+      const updatedPatients = data.map((patient) => ({
+        ...patient,
+        gender: Math.random() > 0.5 ? 'Male' : 'Female',
+        age: Math.floor(Math.random() * 8) + 18,
+      }));
+
+      console.log(updatedPatients);
+      setPatients(updatedPatients);
+    };
+
+    fetchAppointments();
+  }, []);
+
+  const handlePatientClick = async (patientId) => {
+    console.log(patientId);
+
+    const patientData = await getAppointment(patientId);
+    const updatedPatientData = {
+      ...patientData,
+      gender: patientData.gender || (Math.random() > 0.5 ? 'Male' : 'Female'),
+      age: patientData.age || Math.floor(Math.random() * 8) + 18,
+    };
+
+    setSelectedPatient(updatedPatientData);
+  };
+
+  console.log(selectedPatient);
+
+  return (
+    <main style={styles.main}>
+      <div style={styles.appointmentList}>
+        <h2 style={styles.sectionTitle}>Patient Appointment List 📋</h2>
+        <table style={styles.table}>
+          <thead>
+            <tr>
+              <th style={styles.headerCell}>No.</th>
+              <th style={styles.headerCell}>Name</th>
+            </tr>
+          </thead>
+          <tbody>
+            {patients.map((patient, index) => (
+              <tr
+                key={index}
+                style={{
+                  ...styles.row,
+                  backgroundColor: index % 2 === 0 ? '#FFFFFF' : '#f7faff',
+                }}
+                onClick={() => handlePatientClick(patient._id)}
+              >
+                <td style={styles.cell}>
+                  {String(index + 1).padStart(3, '0')}
+                </td>
+                <td style={styles.cell}>
+                  {patient.patientId.lastname} {patient.patientId.firstname}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div style={styles.patientInfo}>
+        <h2 style={styles.sectionTitle}>Patient Information 🩺</h2>
+        <form style={styles.form}>
+          <input
+            type="text"
+            placeholder="patient's name"
+            style={styles.input}
+            value={
+              selectedPatient
+                ? `${selectedPatient.patientId.lastname} ${selectedPatient.patientId.firstname}`
+                : ''
+            }
+            readOnly
+          />
+          <input
+            type="text"
+            placeholder="patient's age"
+            style={styles.input}
+            value={selectedPatient?.age || ''}
+            readOnly
+          />
+          <input
+            type="text"
+            placeholder="patient's gender"
+            style={styles.input}
+            value={selectedPatient?.gender || ''}
+            readOnly
+          />
+          <textarea
+            placeholder="Description of the condition"
+            style={styles.textarea}
+            value={selectedPatient?.reason || ''}
+            readOnly
+          ></textarea>
+          <div style={styles.buttonGroup}>
+            <button
+              type="button"
+              style={styles.button}
+              onClick={handleButtonClick}
+            >
+              Generate prescription
+            </button>
+            <button type="button" style={styles.button}>
+              Change appointment time
+            </button>
+          </div>
+        </form>
+      </div>
+    </main>
+  );
+};
 
 const styles = {
   main: {
@@ -92,6 +163,7 @@ const styles = {
   table: {
     width: '100%',
     borderCollapse: 'collapse',
+    cursor: 'pointer',
   },
   headerCell: {
     padding: '8px',
