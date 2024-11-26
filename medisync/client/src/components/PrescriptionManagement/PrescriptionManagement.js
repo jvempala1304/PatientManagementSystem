@@ -1,47 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 const Prescriptions = () => {
-  const [prescriptions, setPrescriptions] = useState([
-    {
-      id: 1,
-      medicationName: 'Lisinopril',
-      dosage: '10mg',
-      frequency: 'Once daily',
-      startDate: '2023-11-01',
-      endDate: '2024-05-01',
-      prescribedBy: 'Dr. Smith',
-      notes: 'Take with food'
-    },
-  ]);
+  const [prescriptions, setPrescriptions] = useState([]);
 
-  const [newPrescription, setNewPrescription] = useState({
-    medicationName: '',
-    dosage: '',
-    frequency: '',
-    startDate: '',
-    endDate: '',
-    prescribedBy: '',
-    notes: ''
-  });
+  useEffect(() => {
+    // Define a function to fetch prescriptions
+    const fetchPrescriptions = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/prescriptions/patient/670354b793f416224daa6321');
+        setPrescriptions(response.data);
+      } catch (error) {
+        console.error('Error fetching prescriptions:', error);
+      }
+    };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setNewPrescription(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setPrescriptions(prev => [...prev, { ...newPrescription, id: Date.now() }]);
-    setNewPrescription({
-      medicationName: '',
-      dosage: '',
-      frequency: '',
-      startDate: '',
-      endDate: '',
-      prescribedBy: '',
-      notes: ''
-    });
-  };
+    // Call the function to fetch prescriptions
+    fetchPrescriptions();
+  }, []); // Empty dependency array ensures this runs once when the component mounts
 
   return (
     <main style={styles.main}>
@@ -49,96 +25,15 @@ const Prescriptions = () => {
         <p style={styles.text}>Prescriptions</p>
         <div style={styles.prescriptionList}>
           {prescriptions.map(prescription => (
-            <div key={prescription.id} style={styles.prescriptionItem}>
-              <h3>{prescription.medicationName}</h3>
-              <p>Dosage: {prescription.dosage}</p>
-              <p>Frequency: {prescription.frequency}</p>
-              <p>Start Date: {prescription.startDate}</p>
-              <p>End Date: {prescription.endDate}</p>
-              <p>Prescribed By: {prescription.prescribedBy}</p>
-              <p>Notes: {prescription.notes}</p>
+            <div key={prescription._id} style={styles.prescriptionItem}>
+              <h3>{prescription.medications[0].name}</h3>
+              <p>Dosage: {prescription.medications[0].dosage}</p>
+              <p>Frequency: {prescription.medications[0].frequency}</p>
+              <p>Instructions: {prescription.instructions}</p>
+              <p>Date: {new Date(prescription.date).toLocaleDateString()}</p>
             </div>
           ))}
         </div>
-        <p style={styles.text}>Add New Prescription</p>
-        <form onSubmit={handleSubmit}>
-          <div style={styles.one}>
-            <input
-              style={styles.inputs}
-              type="text"
-              name="medicationName"
-              value={newPrescription.medicationName}
-              onChange={handleInputChange}
-              placeholder="Medication Name"
-              required
-            />
-          </div>
-          <div style={styles.one}>
-            <input
-              style={styles.inputs}
-              type="text"
-              name="dosage"
-              value={newPrescription.dosage}
-              onChange={handleInputChange}
-              placeholder="Dosage"
-              required
-            />
-          </div>
-          <div style={styles.one}>
-            <input
-              style={styles.inputs}
-              type="text"
-              name="frequency"
-              value={newPrescription.frequency}
-              onChange={handleInputChange}
-              placeholder="Frequency"
-              required
-            />
-          </div>
-          <div style={styles.one}>
-            <input
-              style={styles.inputs}
-              type="date"
-              name="startDate"
-              value={newPrescription.startDate}
-              onChange={handleInputChange}
-              required
-            />
-          </div>
-          <div style={styles.one}>
-            <input
-              style={styles.inputs}
-              type="date"
-              name="endDate"
-              value={newPrescription.endDate}
-              onChange={handleInputChange}
-              required
-            />
-          </div>
-          <div style={styles.one}>
-            <input
-              style={styles.inputs}
-              type="text"
-              name="prescribedBy"
-              value={newPrescription.prescribedBy}
-              onChange={handleInputChange}
-              placeholder="Prescribed By"
-              required
-            />
-          </div>
-          <div style={styles.one}>
-            <textarea
-              style={styles.inputs}
-              name="notes"
-              value={newPrescription.notes}
-              onChange={handleInputChange}
-              placeholder="Notes"
-            ></textarea>
-          </div>
-          <div style={styles.btns}>
-            <button type="submit" style={styles.btn}>Add Prescription</button>
-          </div>
-        </form>
       </div>
     </main>
   );
@@ -163,7 +58,7 @@ const styles = {
     marginBottom: "20px",
   },
   mainRight: {
-    width: "450px",
+    width: "750px",
     background: "rgba(255, 255, 255, 0.3)",
     borderRadius: "15px",
     backdropFilter: "blur(10px)",
@@ -179,38 +74,6 @@ const styles = {
     borderRadius: "10px",
     padding: "15px",
     marginBottom: "15px",
-  },
-  one: {
-    width: "100%",
-    display: "flex",
-    justifyContent: "center",
-    margin: "15px 0",
-    position: "relative",
-  },
-  btns: {
-    width: "100%",
-    display: "flex",
-    justifyContent: "center",
-  },
-  inputs: {
-    border: "none",
-    width: "85%",
-    height: "48px",
-    borderRadius: "5px",
-    paddingLeft: "10px",
-    fontSize: "16px",
-  },
-  btn: {
-    width: "80%",
-    height: "50px",
-    color: "rgb(56, 147, 227)",
-    backgroundColor: "#e4f0fe",
-    marginTop: "10px",
-    textAlign: "center",
-    fontSize: "20px",
-    borderRadius: "10px",
-    border: "none",
-    cursor: "pointer",
   },
 };
 
