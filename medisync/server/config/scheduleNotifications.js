@@ -29,7 +29,7 @@ const appointments = [
     patientName: "James Boby Vempala",
     doctorName: "Smith",
     clinicName: "Smile Dental",
-    appointmentDateTime: "2024-11-25T20:12:00",
+    appointmentDateTime: "2024-11-25T20:10:00",
     fcmToken:
       "fhbFajqmmyjtwXGuzvKOa-:APA91bHfVmTV6p6QKCAhPdSoy8D0l9Qe8sJxBzm25NoaeThSpSW2bjnQZUdteBgzkRlfOpqmwJHyV3Ts1PGKaqqfqg61xvQpZ6OTMFOkkyI3KMxWjamsodA",
   },
@@ -37,7 +37,7 @@ const appointments = [
     patientName: "Firefox James",
     doctorName: "Khaled",
     clinicName: "Comfort Labs",
-    appointmentDateTime: "2024-11-25T20:13:00",
+    appointmentDateTime: "2024-11-25T20:11:00",
     fcmToken:
       "flxYzKZ2hkjhlCL4npCXp1:APA91bEBbhMiBxil7RRRLh6K7o4t7yNozZoNfcSQbvQ3Aq7ytdi_tudeHnh7zZVsEiwKE9YbPxGvssWC2aM3WwrwIM1xHtTEzVHf19lrPGShruQCUkqDyds",
   },
