@@ -8,3 +8,6 @@ export { default as Index } from './Index/Index';
 export { default as PrescriptionManagement } from './PrescriptionManagement/PrescriptionManagement';
 export { default as AppointmentManagement } from './AppointmentManagement/AppointmentManagement';
 export { default as PrescriptionInfo } from './PrescriptionInfo/PrescriptionInfo';
+export { default as PatientList } from './PatientList/PatientList';
+
+

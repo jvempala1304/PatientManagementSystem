@@ -12,25 +12,21 @@ const Navigation = () => (
         </Link>
       </li>
       <li>
-        <Link to="/patient-list" style={styles.link}>
+        <Link to="/PatientList" style={styles.link}>
           Patient List
         </Link>
       </li>
       <li>
-        <Link to="/" style={styles.link}>
+        <Link to="/appointments" style={styles.link}>
           Appointment Management
         </Link>
       </li>
 
       <li>
-
-<Link to="/patient-profile" style={styles.link}>
-
-  Profile
-
-</Link>
-
-</li>
+        <Link to="/patient-profile" style={styles.link}>
+          Profile
+        </Link>
+      </li>
 
       <li>
         <Link to="/login" style={styles.link}>

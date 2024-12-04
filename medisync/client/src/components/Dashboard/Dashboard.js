@@ -1,10 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getAppointments, getAppointment } from '../../services/api';
+import OpenModal from '../OpenModal/OpenModal';
+import {
+  getAppointments,
+  getAppointment,
+  updateAppointment,
+} from '../../services/api';
 
 const Dashboard = () => {
   const [patients, setPatients] = useState([]);
   const [selectedPatient, setSelectedPatient] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newAppointmentStartTime, setNewAppointmentStartTime] = useState('');
+  const [newAppointmentEndTime, setNewAppointmentEndTime] = useState('');
   const navigate = useNavigate();
 
   const handleButtonClick = () => {
@@ -26,7 +34,7 @@ const Dashboard = () => {
         age: Math.floor(Math.random() * 8) + 18,
       }));
 
-      console.log(updatedPatients);
+      // console.log(updatedPatients);
       setPatients(updatedPatients);
     };
 
@@ -34,20 +42,50 @@ const Dashboard = () => {
   }, []);
 
   const handlePatientClick = async (patientId) => {
-    console.log(patientId);
-
     const patientData = await getAppointment(patientId);
     const updatedPatientData = {
       ...patientData,
       gender: patientData.gender || (Math.random() > 0.5 ? 'Male' : 'Female'),
       age: patientData.age || Math.floor(Math.random() * 8) + 18,
     };
-
     setSelectedPatient(updatedPatientData);
+    console.log(updatedPatientData);
   };
 
-  console.log(selectedPatient);
+  const openModal = () => {
+    if (!selectedPatient) {
+      alert('Please select an appointment first.');
+      return;
+    }
+    setNewAppointmentStartTime(selectedPatient.start.dateTime || '');
+    setNewAppointmentEndTime(selectedPatient.end.dateTime || '');
+    setIsModalOpen(true);
+  };
 
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setNewAppointmentStartTime('');
+    setNewAppointmentEndTime('');
+  };
+
+  const handleSave = async () => {
+    if (!newAppointmentStartTime || !newAppointmentEndTime) {
+      alert('Please select both start and end times.');
+      return;
+    }
+    if (newAppointmentStartTime > newAppointmentEndTime) {
+      alert('Start time cannot be greater than end time.');
+      return;
+    }
+    await updateAppointment(selectedPatient._id, {
+      start: { dateTime: newAppointmentStartTime, timeZone: 'UTC' },
+      end: { dateTime: newAppointmentEndTime, timeZone: 'UTC' },
+    });
+    alert('Appointment updated successfully.');
+    closeModal();
+    const updatedAppointments = await getAppointments();
+    setPatients(updatedAppointments);
+  };
   return (
     <main style={styles.main}>
       <div style={styles.appointmentList}>
@@ -109,6 +147,25 @@ const Dashboard = () => {
             value={selectedPatient?.gender || ''}
             readOnly
           />
+          <input
+            type="text"
+            placeholder="Appointment Start Time"
+            style={styles.input}
+            value={
+              new Date(selectedPatient?.start?.dateTime).toLocaleString() || ''
+            }
+            readOnly
+          />
+          <input
+            type="text"
+            placeholder="Appointment End Time"
+            style={styles.input}
+            value={
+              new Date(selectedPatient?.end?.dateTime).toLocaleString() || ''
+            }
+            readOnly
+          />
+
           <textarea
             placeholder="Description of the condition"
             style={styles.textarea}
@@ -123,12 +180,25 @@ const Dashboard = () => {
             >
               Generate prescription
             </button>
-            <button type="button" style={styles.button}>
+            <button type="button" style={styles.button} onClick={openModal}>
               Change appointment time
             </button>
           </div>
         </form>
       </div>
+      <OpenModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        currentAppointmentTimes={{
+          start: new Date(selectedPatient?.start?.dateTime).toLocaleString(),
+          end: new Date(selectedPatient?.end?.dateTime).toLocaleString(),
+        }}
+        newAppointmentStartTime={newAppointmentStartTime}
+        newAppointmentEndTime={newAppointmentEndTime}
+        onChangeStartTime={setNewAppointmentStartTime}
+        onChangeEndTime={setNewAppointmentEndTime}
+        onSave={handleSave}
+      />
     </main>
   );
 };

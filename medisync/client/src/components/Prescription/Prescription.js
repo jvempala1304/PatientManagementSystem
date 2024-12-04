@@ -1,75 +1,48 @@
-import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
-import {
-  getPrescriptionsByPatient,
-  createPrescription,
-} from '../../services/api';
+import React, { useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
+import { createPrescription } from '../../services/api';
 const Prescription = () => {
+  const navigate = useNavigate();
   const location = useLocation();
-  const appointment = location.state || {}; // Get appointment information from location
-  console.log(appointment.patientData.age);
-  const patientId = appointment.patientData._id; // Get patient information
-  const [prescription, setPrescription] = useState(null);
+  const appointment = location.state || {};
+  const patientId = appointment.patientData.patientId._id;
+  const doctorId = appointment.patientData.doctorId._id;
+  const [prescription] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
-
-  // Fetch prescriptions for the patient
-  useEffect(() => {
-    if (patientId) {
-      getPrescriptionsByPatient(patientId)
-        .then((data) => {
-          if (data && data.length > 0) {
-            setPrescription(data[data.length - 1]); // Use the most recent prescription
-          } else {
-            alert('No prescription records for this patient');
-          }
-        })
-        .catch((error) => {
-          console.error('Failed to fetch prescription data:', error);
-        });
-    }
-  }, [patientId]);
-
-  // Submit a new prescription
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!patientId._id) return;
-
+    if (!patientId) return;
     const newPrescription = {
-      name: e.target.name.value,
-      dosage: e.target.dosage.value,
-      frequency: e.target.frequency.value,
-      duration: e.target.duration.value,
+      patientId: patientId,
+      doctorId: doctorId,
+      medications: [
+        {
+          name: e.target.name.value,
+          dosage: e.target.dosage.value,
+          frequency: e.target.frequency.value,
+          duration: e.target.duration.value,
+        },
+      ],
       instructions: e.target.instructions.value,
-      patientId: patientId._id,
+      date: new Date().toISOString(),
     };
-
-    createPrescription(newPrescription)
-      .then(() => {
-        alert('Prescription submitted successfully!');
-        setShowPopup(true);
-        // Refresh prescription data after submission
-        return getPrescriptionsByPatient(patientId);
-      })
-      .then((data) => {
-        if (data && data.length > 0) {
-          setPrescription(data[data.length - 1]);
-        }
-      })
-      .catch((error) => {
-        console.error('Failed to create prescription:', error);
-      });
+    createPrescription(newPrescription).then(() => {
+      setShowPopup(true);
+      setTimeout(() => {
+        setShowPopup(false);
+      }, 2000);
+      navigate('/medication-search');
+    });
   };
-
-  // Ensure patientId exists before accessing it
-  const firstName = appointment.patientData.patientId?.firstname || '';
-  const lastName = appointment.patientData.patientId?.lastname || '';
-  const startTime = appointment.patientData.start.dateTime || '';
-  const endTime = appointment.patientData.end.dateTime || '';
-  const age = appointment.patientData.age || '';
-  const gender = appointment.patientData.gender || 'Male';
-  const address = appointment.address || ''; // Use this field if available
+  const firstName = appointment.patientData.patientId?.firstname;
+  const lastName = appointment.patientData.patientId?.lastname;
+  const startTime = appointment.patientData.start.dateTime;
+  const endTime = appointment.patientData.end.dateTime;
+  const age = appointment.patientData.age;
+  const gender = appointment.patientData.gender;
+  const reason = appointment.patientData.reason;
 
   return (
     <div style={styles.container}>
@@ -156,12 +129,12 @@ const Prescription = () => {
                 </div>
                 <div style={styles.row}>
                   <div style={styles.field}>
-                    <label style={styles.label}>Address:</label>
+                    <label style={styles.label}>Reason:</label>
                     <input
                       type="text"
-                      name="address"
+                      name="reason"
                       style={styles.input}
-                      defaultValue={address}
+                      defaultValue={reason}
                       disabled
                     />
                   </div>
