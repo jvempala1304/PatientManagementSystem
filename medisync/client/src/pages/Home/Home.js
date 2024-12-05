@@ -1,11 +1,11 @@
 // Home.js
 import React from 'react';
-import { Navigation, Footer, Dashboard } from '../../components';
+import { Navigation, Footer, Banner } from '../../components';
 const Home = () => {
   return (
     <div>
       <Navigation />
-      <Dashboard />
+      <Banner />
       <Footer />
     </div>
   );

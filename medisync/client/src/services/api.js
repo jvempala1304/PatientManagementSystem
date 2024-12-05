@@ -52,3 +52,12 @@ export const getPrescriptionsByPatient = async (patientId) => {
   );
   return response.data;
 };
+
+// Update an existing appointment
+export const updateAppointment = async (id, appointmentData) => {
+  const response = await axios.put(
+    `${API_URL}/appointments/${id}`,
+    appointmentData
+  );
+  return response.data;
+};

@@ -9,6 +9,8 @@ import {
   FeedbackPage,
   Profile,
   PrescriptionInfo,
+  PatientList,
+  MedicationSearch,
 } from './pages';
 import PrescriptionManagementPage from './pages/PrescriptionManagement/PrescriptionManagement';
 import AppointmentManagementPage from './pages/AppointmentManagement/AppointmentManagement';
@@ -50,15 +52,16 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/feedback" element={<FeedbackPage />} />
+          <Route path="/PatientList" element={<PatientList />} />
           <Route
             path="/patient-profile"
             element={<Profile patient={patientData} />}
           />
-
           <Route
             path="/prescriptions"
             element={<PrescriptionManagementPage />}
           />
+          <Route path="/medication-search" element={<MedicationSearch />} />
           <Route
             path="/prescription-management"
             element={<PrescriptionInfo />}
