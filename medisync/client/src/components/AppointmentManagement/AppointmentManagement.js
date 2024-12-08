@@ -16,11 +16,12 @@ const AppointmentManagement = () => {
     notes: '',
     type: 'in-person',
     customerTimeZone: 'America/New_York',
-    smsNotificationsEnabled: true
+    smsNotificationsEnabled: true,
   });
   const [patientDetails, setPatientDetails] = useState({});
   const [message, setMessage] = useState('');
   const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     fetchPatientDetails();
@@ -89,6 +90,7 @@ const AppointmentManagement = () => {
     if (!formData.clinicId) newErrors.clinicId = 'Please select a clinic';
     if (!formData.start) newErrors.start = 'Please select a start date and time';
     if (!formData.reason.trim()) newErrors.reason = 'Please enter a reason for the appointment';
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -97,18 +99,51 @@ const AppointmentManagement = () => {
     e.preventDefault();
     if (!validateForm()) return;
 
+    setIsLoading(true);
+    
     try {
       const appointmentData = {
-        ...formData,
-        start: { dateTime: formData.start.toISOString(), timeZone: 'UTC' },
+        patientId: formData.patientId,
+        doctorId: formData.doctorId,
+        clinicId: formData.clinicId,
+        start: {
+          dateTime: formData.start.toISOString(),
+          timeZone: 'UTC'
+        },
+        end: {
+          dateTime: new Date(formData.start.getTime() + 30 * 60 * 1000).toISOString(),
+          timeZone: 'UTC'
+        },
+        reason: formData.reason,
+        notes: formData.notes,
+        type: formData.type,
+        customerTimeZone: formData.customerTimeZone,
+        smsNotificationsEnabled: formData.smsNotificationsEnabled,
+        status: 'scheduled', // Ensure this is included if required by your API
       };
+      
+      console.log('Appointment Data:', appointmentData); // Log the data to check its format
+      
       const response = await axios.post('http://localhost:5000/api/appointments', appointmentData);
+      
+      // Update appointments state with the newly created appointment
       setAppointments([...appointments, response.data]);
       setMessage('Appointment created successfully');
       resetForm();
+      
     } catch (error) {
       console.error('Error submitting appointment:', error);
-      setMessage(error.response?.data?.message || 'Error submitting appointment');
+      
+      if (error.response && error.response.data) {
+        // Display error message from server response
+        setMessage(error.response.data.message || 'Error submitting appointment');
+      } else {
+        // Handle unknown errors
+        setMessage('An unknown error occurred while submitting the appointment.');
+      }
+      
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -122,18 +157,21 @@ const AppointmentManagement = () => {
       notes: '',
       type: 'in-person',
       customerTimeZone: 'America/New_York',
-      smsNotificationsEnabled: true
+      smsNotificationsEnabled: true,
     });
+    
     setErrors({});
   };
 
   const generateTimeSlots = () => {
     let slots = [];
+    
     for (let hour = 9; hour < 17; hour++) {
       for (let minute of ['00', '30']) {
         slots.push(new Date(0, 0, 0, hour, parseInt(minute)));
       }
     }
+    
     return slots;
   };
 
@@ -162,6 +200,7 @@ const AppointmentManagement = () => {
             <option key={clinic._id} value={clinic._id}>{clinic.name}</option>
           ))}
         </select>
+        
         {errors.clinicId && <span style={styles.error}>{errors.clinicId}</span>}
 
         <select
@@ -175,6 +214,7 @@ const AppointmentManagement = () => {
             <option key={doctor._id} value={doctor._id}>{`${doctor.firstName} ${doctor.lastName}`}</option>
           ))}
         </select>
+        
         {errors.doctorId && <span style={styles.error}>{errors.doctorId}</span>}
 
         <DatePicker
@@ -190,6 +230,7 @@ const AppointmentManagement = () => {
           placeholderText="Select Start Date and Time"
           style={styles.input}
         />
+        
         {errors.start && <span style={styles.error}>{errors.start}</span>}
 
         <input
@@ -200,6 +241,7 @@ const AppointmentManagement = () => {
           onChange={handleInputChange}
           style={styles.input}
         />
+        
         {errors.reason && <span style={styles.error}>{errors.reason}</span>}
         
         <textarea
@@ -221,24 +263,29 @@ const AppointmentManagement = () => {
         <thead>
           <tr>
             <th>Patient Name</th>
-            <th>Doctor Name</th>
             <th>Clinic Name</th>
             <th>Start</th>
             <th>Status</th>
           </tr>
         </thead>
+        
         <tbody>
           {appointments.map((appointment) => (
             <tr key={appointment._id}>
               <td>{`${appointment.patientId.firstname} ${appointment.patientId.lastname}`}</td>
-              <td>{`${appointment.doctorId.firstName} ${appointment.doctorId.lastName}`}</td>
               <td>{appointment.clinicId.name}</td>
-              <td>{new Date(appointment.start.dateTime).toLocaleString()}</td>
+              <td>
+                {appointment.start && appointment.start.dateTime ? 
+                  new Date(appointment.start.dateTime).toLocaleString() : 
+                  'No start date available'}
+              </td>
               <td>{appointment.status}</td>
             </tr>
           ))}
         </tbody>
+        
       </table>
+      
     </div>
   );
 };
@@ -249,56 +296,64 @@ const styles = {
     backgroundColor: 'rgb(234, 244, 254)',
     minHeight: 'calc(100vh - 160px)',
   },
+  
   sectionTitle: {
     color: 'rgb(56, 147, 227)',
     fontSize: '20px',
     fontWeight: 'bold',
     marginBottom: '20px',
   },
+  
   form: {
     display: 'flex',
     flexDirection: 'column',
     gap: '10px',
     marginBottom: '20px',
   },
+  
   input: {
     height: '40px',
     paddingLeft: '10px',
     borderRadius: '5px',
     fontSize: '16px',
-    border: 'none'
-  },
-  textarea: {
-    padding: '10px',
-    borderRadius: '5px',
-    fontSize: '16px',
-    resize: 'none',
-    border: 'none',
-    height: '100px'
-  },
-  button: {
-    height: '50px',
-    color: 'rgb(56, 147, 227)',
-    backgroundColor: '#e4f0fe',
-    fontSize: '18px',
-    borderRadius: '10px',
-    border: 'none',
-    cursor: 'pointer'
-  },
-  error: {
-    color: 'red',
-    fontSize: '14px',
-  },
-  message: {
-    marginBottom: '10px',
-    padding: '10px',
-    backgroundColor: '#e4f0fe',
-    borderRadius: '5px',
-  },
-  table: {
-    width: '100%',
-    borderCollapse: 'collapse'
-  },
+   border:'none'
+   },
+  
+   textarea:{
+     padding:'10px',
+     borderRadius:'5px',
+     fontSize:'16px',
+     resize:'none',
+     border:'none',
+     height:'100px'
+   },
+  
+   button:{
+     height:'50px',
+     color:'rgb(56,147,227)',
+     backgroundColor:'#e4f0fe',
+     fontSize:'18px',
+     borderRadius:'10px',
+     border:'none',
+     cursor:'pointer'
+   },
+  
+   error:{
+     color:'red',
+     fontSize:'14px'
+   },
+  
+   message:{
+     marginBottom:'10px',
+     padding:'10px',
+     backgroundColor:'#e4f0fe',
+     borderRadius:'5px'
+   },
+  
+   table:{
+     width:'100%',
+     borderCollapse:'collapse'
+   },
 };
 
 export default AppointmentManagement;
